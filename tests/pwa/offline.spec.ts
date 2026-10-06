@@ -31,6 +31,16 @@ test('works offline after precaching, including previously unopened backup and r
   await page.getByRole('button', { name: 'Fechar', exact: true }).click()
   await page.getByRole('button', { name: 'Dispensar aviso' }).click()
   await context.setOffline(true)
+  // Routes keep working offline when they carry a query string.
+  await page.goto('/app?new=1')
+  await expect(page.getByRole('dialog', { name: 'Nova lista' })).toBeVisible()
+  await page.getByRole('button', { name: 'Fechar', exact: true }).click()
+  await page.goto('/?origem=convite')
+  await expect(
+    page.getByRole('link', { name: /Abrir Cartoon Check/ }),
+  ).toBeVisible()
+  await page.getByRole('link', { name: /Abrir Cartoon Check/ }).click()
+  await page.getByRole('link', { name: /Japão.*para comprar/ }).click()
   await page.reload()
   await page
     .getByRole('checkbox', { name: 'Comprar Nintendo Switch 2', exact: true })

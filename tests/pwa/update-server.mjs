@@ -22,10 +22,10 @@ await generateSW({
   clientsClaim: true,
   navigateFallback: '/index.html',
   navigateFallbackAllowlist: [
-    /^\/$/,
-    /^\/app(?:\/.*)?$/,
-    /^\/onboarding\/?$/,
-    /^\/restore\/?$/,
+    /^\/(?:\?.*)?$/,
+    /^\/onboarding\/?(?:\?.*)?$/,
+    /^\/restore\/?(?:\?.*)?$/,
+    /^\/app(?:[/?].*)?$/,
   ],
 })
 let active = root

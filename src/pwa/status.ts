@@ -6,6 +6,7 @@ const listeners = new Set<() => void>()
 let status = {
   offlineReady: false,
   needRefresh: false,
+  deferred: false,
   updating: false,
   message: '',
 }
@@ -23,13 +24,15 @@ export function getPwaStatus() {
   return status
 }
 const update = registerSW({
-  onNeedReload: () => { change({ needRefresh: true }) },
+  onNeedReload: () => {
+    change({ needRefresh: true })
+  },
   immediate: true,
   onOfflineReady: () => {
     change({ offlineReady: true })
   },
   onNeedRefresh: () => {
-    change({ needRefresh: true })
+    change({ needRefresh: true, deferred: false })
   },
   onRegisteredSW: (_url, registration) => {
     if (registration?.active) change({ offlineReady: true })
@@ -45,6 +48,33 @@ const update = registerSW({
     })
   },
 })
+/** Hides the offer until the app is opened again or another version arrives. */
+export function deferUpdate() {
+  change({ deferred: true, message: '' })
+}
+// How long the new version may take to assume control. Running out of time
+// never approves the update; it only gives the session back to the user.
+const activationTime = 15_000
+function activateWaitingWorker() {
+  return new Promise<void>((resolve, reject) => {
+    const controlled = () => {
+      clearTimeout(timer)
+      resolve()
+      location.reload()
+    }
+    const timer = setTimeout(() => {
+      navigator.serviceWorker.removeEventListener(
+        'controllerchange',
+        controlled,
+      )
+      reject(new Error('The new version did not take control in time.'))
+    }, activationTime)
+    navigator.serviceWorker.addEventListener('controllerchange', controlled, {
+      once: true,
+    })
+    void update(true).catch(reject)
+  })
+}
 export async function applyUpdate() {
   if (!draftIsSafe()) {
     change({ message: 'Salve ou descarte seu rascunho antes de atualizar.' })
@@ -59,17 +89,11 @@ export async function applyUpdate() {
   try {
     const applied = await exclusiveUpdate(async () => {
       if (hasPendingOperations()) throw new Error('Save in progress')
-      await new Promise<void>((resolve, reject) => {
-        navigator.serviceWorker.addEventListener(
-          'controllerchange',
-          () => {
-            resolve()
-            location.reload()
-          },
-          { once: true },
-        )
-        void update(true).catch(reject)
-      })
+      const registration = await navigator.serviceWorker.getRegistration()
+      // Without a waiting worker another tab already activated the new
+      // version, so this page only has to load it.
+      if (registration?.waiting) await activateWaitingWorker()
+      else location.reload()
     })
     if (!applied)
       change({

@@ -23,7 +23,7 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
-        id: '/',
+        id: '/app',
         name: 'Cartoon Check',
         short_name: 'Cartoon Check',
         description:
@@ -61,11 +61,13 @@ export default defineConfig({
         clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,woff2,svg,png,webmanifest}'],
         navigateFallback: '/index.html',
+        // Matched against the path and the query string, so each route also
+        // accepts a query: a draft is resumed at /app?new=1, for example.
         navigateFallbackAllowlist: [
-          /^\/$/,
-          /^\/onboarding\/?$/,
-          /^\/restore\/?$/,
-          /^\/app(?:\/.*)?$/,
+          /^\/(?:\?.*)?$/,
+          /^\/onboarding\/?(?:\?.*)?$/,
+          /^\/restore\/?(?:\?.*)?$/,
+          /^\/app(?:[/?].*)?$/,
         ],
         maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
       },
