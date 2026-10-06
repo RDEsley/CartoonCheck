@@ -20,6 +20,8 @@ export interface DeletedItem {
   item: ShoppingItem
   photo: ImageAsset | null
   operationId: string
+  /** The currency its prices were written in; restoring into another one would reinterpret them. */
+  currency: ShoppingList['currency']
 }
 
 function assertPricingCurrency(
@@ -139,6 +141,6 @@ export async function deleteItem(
     const time = updatedTime(item.updatedAt, list.updatedAt)
     await touchList(db, list, time)
     const history = await appendHistory(db, 'item_removed', list, time, item)
-    return { item, photo, operationId: history.id }
+    return { item, photo, operationId: history.id, currency: list.currency }
   })
 }

@@ -140,7 +140,11 @@ export function ListEditor({
               const value = currencies.find(
                 (entry) => entry === event.target.value,
               )
-              if (value) setCurrency(value)
+              if (value === undefined || value === currency) return
+              setCurrency(value)
+              // The manual rate belongs to the previous pair of currencies.
+              setSecondary(null)
+              setRate('')
             }}
           >
             {currencies.map((value) => (

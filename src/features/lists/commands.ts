@@ -50,9 +50,11 @@ export async function updateList(
         throw new DataError('CURRENCY_LOCKED', 'Remove prices before changing the list currency.')
       }
     }
+    // A new main currency drops the old exchange pair unless this edit provides one.
     const list = listSchema.parse({
-      ...current, ...fields,
+      ...current,
       ...(currencyChanged ? { secondaryCurrency: null, manualExchangeRate: null } : {}),
+      ...fields,
       updatedAt: updatedTime(current.updatedAt), revision: current.revision + 1,
     })
     await db.lists.put(list)

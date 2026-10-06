@@ -109,6 +109,17 @@ describe('shopping list commands', () => {
     expect(updated).toMatchObject({ currency: 'EUR', secondaryCurrency: null, manualExchangeRate: null })
   })
 
+  it('keeps an exchange pair provided together with the new currency', async () => {
+    const { db, context } = await shoppingDatabase()
+    const list = await createList(db, context, {
+      name: 'Japão', currency: 'JPY', secondaryCurrency: 'BRL', manualExchangeRate: '0.035',
+    })
+    const updated = await updateList(db, context, list.id, {
+      currency: 'USD', secondaryCurrency: 'BRL', manualExchangeRate: '5.4',
+    }, list.revision)
+    expect(updated).toMatchObject({ currency: 'USD', secondaryCurrency: 'BRL', manualExchangeRate: '5.4' })
+  })
+
   it('deletes a list, its items and their photos while retaining history and other lists', async () => {
     const { db, context } = await shoppingDatabase()
     const list = await createList(db, context, { name: 'Japão' })

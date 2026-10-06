@@ -36,6 +36,15 @@ export async function undoItemAction(
             'CONFLICT',
             'This item has already been restored.',
           )
+        if (
+          (expected.plannedPriceMinor !== null ||
+            expected.paidPriceMinor !== null) &&
+          list.currency !== action.snapshot.currency
+        )
+          throw new DataError(
+            'CONFLICT',
+            'The list currency changed after this item was removed.',
+          )
         const photo = action.snapshot.photo
         if (expected.photoId !== null && photo === null)
           throw new DataError(
