@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useRef } from 'react'
+import { memo, useRef } from 'react'
 import * as m from 'motion/react-m'
 import { duration } from '../../animations/tokens'
 import { useCelebrations } from '../../celebrations/context'
@@ -22,7 +22,8 @@ function neighborCheckbox(card: HTMLElement | null) {
   const index = boxes.findIndex((box) => card?.contains(box))
   return boxes[index + 1] ?? boxes[index - 1] ?? null
 }
-export function ShoppingItemCard({
+// Memoized: a change in one item must not re-render every other card.
+export const ShoppingItemCard = memo(function ShoppingItemCard({
   id,
   archived,
   edit,
@@ -39,7 +40,8 @@ export function ShoppingItemCard({
   const card = useRef<HTMLLIElement>(null)
   const item = useLiveQuery(() => db.items.get(id), [db, id])
   const { pending, error, run } = useTask()
-  if (!item) return null
+  // The space is kept while the item loads, so the list does not jump.
+  if (!item) return <li className={styles.placeholder} aria-hidden="true" />
   const purchased = item.status === 'purchased'
   return (
     <m.li
@@ -112,4 +114,4 @@ export function ShoppingItemCard({
       )}
     </m.li>
   )
-}
+})

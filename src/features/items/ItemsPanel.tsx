@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Plus } from 'lucide-react'
 import { useRuntime } from '../../app/context'
@@ -12,6 +12,9 @@ import { ItemEditor } from './ItemEditor'
 import { ItemDetails } from './ItemDetails'
 import styles from './items.module.css'
 import { useSearchParams } from 'react-router'
+// Long lists are revealed in steps: only the cards near the screen exist,
+// which keeps opening and checking fast with hundreds of items.
+const step = 60
 export function ItemsPanel({
   list,
   purchasedCount,
@@ -26,7 +29,27 @@ export function ItemsPanel({
     () => (requestedId ? db.items.get(requestedId) : undefined),
     [db, requestedId],
   )
-  const [tab, setTab] = useState<ShoppingItem['status']>('pending')
+  const [tab, selectTab] = useState<ShoppingItem['status']>('pending')
+  const [shown, setShown] = useState(step)
+  const setTab = (next: ShoppingItem['status']) => {
+    selectTab(next)
+    setShown(step)
+  }
+  // The button reveals the next step by itself as it approaches the screen.
+  const revealNearby = useCallback((button: HTMLButtonElement | null) => {
+    if (button === null || typeof IntersectionObserver !== 'function') return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting))
+          setShown((count) => count + step)
+      },
+      { rootMargin: '600px' },
+    )
+    observer.observe(button)
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState<ShoppingItem | null>(null)
   const editedItem = editing ?? requestedItem ?? null
@@ -110,7 +133,7 @@ export function ItemsPanel({
           />
         ) : (
           <ul className={styles.items} data-item-list>
-            {ids.map((id) => (
+            {ids.slice(0, shown).map((id) => (
               <ShoppingItemCard
                 key={id}
                 id={id}
@@ -120,6 +143,18 @@ export function ItemsPanel({
               />
             ))}
           </ul>
+        )}
+        {ids !== undefined && ids.length > shown && (
+          <CartoonButton
+            ref={revealNearby}
+            variant="quiet"
+            className={styles.more}
+            onClick={() => {
+              setShown((count) => count + step)
+            }}
+          >
+            Mostrar mais itens ({ids.length - shown} restantes)
+          </CartoonButton>
         )}
       </section>
       {list.status === 'active' && (
