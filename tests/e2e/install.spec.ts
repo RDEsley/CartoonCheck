@@ -1,0 +1,41 @@
+import { expect, test } from '@playwright/test'
+test('offers a responsive landing demo and platform installation guidance', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('checkbox', { name: 'Experimentar um check' }).click()
+  await expect(page.getByRole('checkbox', { name: 'Experimentar um check' })).toHaveAttribute('aria-checked', 'true')
+  await page.getByRole('button', { name: 'Instalar', exact: true }).click()
+  await expect(page.getByRole('dialog', { name: 'Cartoon Check na sua tela' })).toBeVisible()
+  await expect(page.getByText(/Instalar aplicativo/)).toBeVisible()
+  await page.getByRole('button', { name: 'Entendi', exact: true }).click()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.getByRole('link', { name: 'Abrir Cartoon Check', exact: false }).click()
+  await expect(page.getByRole('heading', { name: 'Como podemos te chamar?' })).toBeVisible()
+})
+test('uses the browser installation event and confirms only the installed event', async ({ page }) => {
+  await page.goto('/')
+  const prevented = await page.evaluate(() => {
+    const event = new Event('beforeinstallprompt', { cancelable: true })
+    Object.defineProperties(event, { prompt: { value: () => { document.documentElement.dataset.promptCalled = 'true'; return Promise.resolve() } }, userChoice: { value: Promise.resolve({ outcome: 'accepted' }) } })
+    window.dispatchEvent(event)
+    return event.defaultPrevented
+  })
+  expect(prevented).toBe(true)
+  await page.getByRole('button', { name: 'Instalar', exact: true }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-prompt-called', 'true')
+  await page.evaluate(() => { window.dispatchEvent(new Event('appinstalled')) })
+  await expect(page.getByRole('button', { name: 'Já está instalado', exact: true })).toBeDisabled()
+})
+test.describe('iPhone guidance', () => {
+  test.use({ userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Mobile/15E148 Safari/604.1' })
+  test('shows Safari instructions and offers backup before installing an existing profile', async ({ page }) => {
+    await page.goto('/app')
+    await page.getByLabel('Seu nome').fill('Richard')
+    await page.getByRole('button', { name: 'Vamos começar' }).click()
+    await page.getByRole('link', { name: 'Ajustes', exact: true }).click()
+    await page.getByRole('button', { name: 'Instalar', exact: true }).click()
+    await expect(page.getByText('No Safari do iPhone ou iPad:', { exact: true })).toBeVisible()
+    await expect(page.getByText(/armazenamento separado do Safari/)).toBeVisible()
+    await expect(page.getByRole('link', { name: /Exportar meus dados antes de instalar/ })).toBeVisible()
+    await expect(page.getByText(/Instalar aplicativo/)).toHaveCount(0)
+  })
+})

@@ -10,6 +10,7 @@ import { useTask } from '../../hooks/useTask'
 import { themes } from '../../db/models'
 import styles from '../../app/layout.module.css'
 import settingsStyles from './settings.module.css'
+import { InstallButton } from '../install/InstallButton'
 const themeLabels = {
   'comic-pop': 'Comic Pop',
   sakura: 'Sakura',
@@ -22,7 +23,9 @@ export function SettingsScreen() {
   const [local, setLocal] = useState<Profile | null>(null)
   if (profile === null) return null
   const selected = local?.revision === profile.revision ? local : profile
-  function change(fields: Partial<Pick<Profile, 'reduceMotion' | 'hapticsEnabled'>>) {
+  function change(
+    fields: Partial<Pick<Profile, 'reduceMotion' | 'hapticsEnabled'>>,
+  ) {
     if (profile === null) return
     setLocal({ ...profile, ...fields })
     void run(() => updateProfile(db, context, fields, profile.revision)).then(
@@ -43,6 +46,11 @@ export function SettingsScreen() {
         </div>
       </div>
       <div className="stack">
+        <div className={styles.card}>
+          <h2 style={{ fontSize: 20 }}>Na sua tela de início</h2>
+          <p className="muted">Um toque para abrir suas listas.</p>
+          <InstallButton />
+        </div>
         <Link
           to="/app/settings/profile"
           className={styles.card}

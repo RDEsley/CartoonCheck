@@ -30,6 +30,7 @@ export function CartoonCheckbox({
         <path
           d="m12 22 7 7 14-15"
           pathLength="1"
+          fill="none"
           stroke="var(--on-success)"
           strokeWidth="4"
           strokeLinecap="round"

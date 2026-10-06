@@ -11,7 +11,8 @@ import { HistoryScreen } from '../features/history/HistoryScreen'
 import { CelebrationProvider } from '../celebrations/CelebrationProvider'
 import { SettingsScreen } from '../features/settings/SettingsScreen'
 import { ProfileScreen } from '../features/profile/ProfileScreen'
-import { Wordmark, BrandArt } from '../components/BrandArt'
+import { Wordmark } from '../components/BrandArt'
+import { Landing } from '../routes/Landing'
 import styles from './layout.module.css'
 const BackupScreen = lazy(async () => {
   const module = await import('../features/backup/BackupScreen')
@@ -26,26 +27,7 @@ export function App() {
           <FeedbackProvider>
             <CelebrationProvider>
               <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <main className={styles.onboarding}>
-                      <Wordmark />
-                      <h1>
-                        Adicione.
-                        <br />
-                        Marque.
-                        <br />
-                        Comemore.
-                      </h1>
-                      <BrandArt size={140} />
-                      <p>
-                        Suas compras, com um pequeno toque de desenho animado.
-                      </p>
-                      <Link to="/app">Abrir Cartoon Check →</Link>
-                    </main>
-                  }
-                />
+                <Route path="/" element={<Landing />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route
                   path="/restore"
