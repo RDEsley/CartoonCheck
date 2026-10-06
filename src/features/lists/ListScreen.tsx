@@ -20,6 +20,7 @@ import { archiveList, deleteList, reactivateList } from './commands'
 import { ListEditor } from './ListEditor'
 import type { ShoppingList } from '../../db/models'
 import styles from '../../app/layout.module.css'
+import { ItemsPanel } from '../items/ItemsPanel'
 
 export function ListScreen() {
   const { listId = '' } = useParams()
@@ -78,10 +79,7 @@ export function ListScreen() {
         </CartoonButton>
       </div>
       <ProgressMeter value={progress} />
-      <EmptyState
-        title="Nada aqui ainda."
-        description="Vamos colocar alguma coisa nessa lista?"
-      />
+      <ItemsPanel key={list.id} list={list} />
       {menu && (
         <BottomSheet
           open

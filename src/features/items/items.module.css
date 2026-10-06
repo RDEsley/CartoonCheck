@@ -1,0 +1,75 @@
+.tabs {
+  display: flex;
+  padding: 6px;
+  border: 2px solid var(--ink);
+  background: var(--surface);
+  border-radius: 16px 18px 15px 17px;
+  gap: 6px;
+  margin: 28px 0 24px;
+}
+.tabs button {
+  width: 50%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 11px 13px 10px 12px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 800;
+}
+.tabs button[aria-selected='true'] {
+  background: var(--secondary);
+  color: var(--on-accent);
+  box-shadow: 1px 2px 0 var(--ink);
+}
+.items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 14px;
+}
+.item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border: 2px solid var(--ink);
+  border-radius: 16px 18px 14px 17px;
+  background: var(--surface);
+  padding: 10px 12px;
+  box-shadow: 2px 3px 0 var(--ink);
+  flex-wrap: wrap;
+}
+.itemName {
+  border: 0;
+  color: var(--text);
+  background: transparent;
+  flex: 1;
+  text-align: left;
+  padding: 6px 0;
+  min-height: 48px;
+  font-size: 18px;
+  font-weight: 800;
+  display: grid;
+  gap: 4px;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.itemName small {
+  font-size: 13px;
+  font-weight: 600;
+}
+.item[data-purchased='true'] .itemName span {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--success);
+}
+.notice {
+  min-height: 24px;
+  margin: 20px 0;
+  font-size: 14px;
+  color: var(--success);
+  font-weight: 800;
+}
+.addButton {
+  width: 100%;
+}
