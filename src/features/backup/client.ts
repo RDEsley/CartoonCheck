@@ -40,9 +40,19 @@ function runWorker(request: WorkerRequest) {
     )
   })
 }
+// Photos dominate the size; records are counted with a rough JSON size each,
+// so a large history also moves the work off the main thread.
+function estimatedBytes(data: BackupData) {
+  const { lists, items, history } = data.metadata.data
+  const records =
+    lists.length + items.length + history.length + data.metadata.assets.length
+  return (
+    data.assets.reduce((sum, asset) => sum + asset.byteLength, 0) +
+    records * 512
+  )
+}
 export async function exportBackup(data: BackupData) {
-  if (data.assets.reduce((sum, asset) => sum + asset.byteLength, 0) < threshold)
-    return packBackup(data)
+  if (estimatedBytes(data) < threshold) return packBackup(data)
   const reply = await runWorker({ action: 'pack', data })
   if (reply.action !== 'pack') throw new Error('Unexpected backup response.')
   return reply.result

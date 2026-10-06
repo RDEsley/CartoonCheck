@@ -52,6 +52,15 @@ test('exports and restores real photos and preserves current data when cancelled
     })
   await expect(page.getByRole('alert')).toContainText('não é um backup válido')
   await page.getByLabel('Escolher arquivo de backup').setInputFiles(path)
+  await expect(page.getByText(/Exportado em .* versão \d+\.\d+\.\d+/)).toBeVisible()
+  const saving = page.waitForEvent('download')
+  await page
+    .getByRole('button', { name: 'Exportar meus dados atuais antes' })
+    .click()
+  await saving
+  await expect(
+    page.getByText('Cópia dos dados atuais exportada.', { exact: true }),
+  ).toBeVisible()
   await page.getByRole('button', { name: 'Substituir e restaurar' }).click()
   await expect(
     page.getByRole('heading', { name: 'Olá, Richard 👋' }),

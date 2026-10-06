@@ -6,6 +6,7 @@ import { createList } from '../lists/commands'
 import { addItem } from '../items/commands'
 import { getCommandContext } from '../../db/context'
 import { packBackup, readStoredZip, validateBackup } from './format'
+import type { BackupData } from './format'
 import { replaceBackup, snapshotBackup } from './commands'
 
 async function scenario() {
@@ -21,9 +22,29 @@ async function scenario() {
   })
   return { ...state, list, item }
 }
+function withRecords(
+  backup: BackupData,
+  records: Partial<BackupData['metadata']['data']>,
+): BackupData {
+  return {
+    ...backup,
+    metadata: {
+      ...backup.metadata,
+      data: { ...backup.metadata.data, ...records },
+    },
+  }
+}
 it('round-trips a versioned archive and invalidates old command contexts', async () => {
   const { db, context, list, item } = await scenario()
   const original = await snapshotBackup(db)
+  expect(original.metadata).toMatchObject({
+    format: 'cartoon-check',
+    formatVersion: 1,
+    appVersion: expect.stringMatching(/^\d+\.\d+\.\d+/) as string,
+  })
+  expect(new Date(original.metadata.exportedAt).toISOString()).toBe(
+    original.metadata.exportedAt,
+  )
   const blob = await packBackup(original)
   const restored = await validateBackup(await blob.arrayBuffer())
   expect(restored.metadata).toEqual(original.metadata)
@@ -49,10 +70,31 @@ it('preserves the entire database if replacement fails after clearing tables', a
   )
   db.items.hook('creating').unsubscribe(failing)
   const current = await snapshotBackup(db)
-  expect(current.metadata.items).toEqual(original.metadata.items)
-  expect(current.metadata.profile).toEqual(original.metadata.profile)
-  expect(current.metadata.lists).toEqual(original.metadata.lists)
-  expect(current.metadata.history).toEqual(original.metadata.history)
+  expect(current.metadata.data).toEqual(original.metadata.data)
+  expect(await getCommandContext(db)).toEqual(context)
+})
+it('revalidates relations and images in the command before clearing anything', async () => {
+  const { db, context, item } = await scenario()
+  const data = await snapshotBackup(db)
+  await expect(
+    replaceBackup(db, context, withRecords(data, { lists: [] })),
+  ).rejects.toThrow('parent')
+  await expect(
+    replaceBackup(
+      db,
+      context,
+      withRecords(data, {
+        items: data.metadata.data.items.map((entry) => ({
+          ...entry,
+          photoId: entry.id,
+        })),
+      }),
+    ),
+  ).rejects.toThrow('Image references')
+  await expect(
+    replaceBackup(db, context, withRecords(data, { profile: null })),
+  ).rejects.toThrow('profile')
+  expect(await db.items.toArray()).toEqual([item])
   expect(await getCommandContext(db)).toEqual(context)
 })
 it('rejects CRC corruption, compressed entries, traversal and duplicate records', async () => {
@@ -68,13 +110,9 @@ it('rejects CRC corruption, compressed entries, traversal and duplicate records'
   expect(() => readStoredZip(new Uint8Array(compressed).buffer)).toThrow()
   const traversal = zipSync({ '../backup.json': strToU8('{}') }, { level: 0 })
   expect(() => readStoredZip(new Uint8Array(traversal).buffer)).toThrow()
-  const duplicate = {
-    ...data,
-    metadata: {
-      ...data.metadata,
-      items: [...data.metadata.items, ...data.metadata.items],
-    },
-  }
+  const duplicate = withRecords(data, {
+    items: [...data.metadata.data.items, ...data.metadata.data.items],
+  })
   await expect(
     validateBackup(await (await packBackup(duplicate)).arrayBuffer()),
   ).rejects.toThrow('Duplicate')
@@ -82,9 +120,10 @@ it('rejects CRC corruption, compressed entries, traversal and duplicate records'
 it('rejects orphan items, unknown versions and missing image files before writing', async () => {
   const { db } = await scenario()
   const data = await snapshotBackup(db)
-  const orphan = { ...data, metadata: { ...data.metadata, lists: [] } }
   await expect(
-    validateBackup(await (await packBackup(orphan)).arrayBuffer()),
+    validateBackup(
+      await (await packBackup(withRecords(data, { lists: [] }))).arrayBuffer(),
+    ),
   ).rejects.toThrow('parent')
   const versioned = zipSync(
     {
@@ -97,13 +136,12 @@ it('rejects orphan items, unknown versions and missing image files before writin
   await expect(
     validateBackup(new Uint8Array(versioned).buffer),
   ).rejects.toThrow()
-  const missing = {
-    ...data,
-    metadata: {
-      ...data.metadata,
-      items: data.metadata.items.map((item) => ({ ...item, photoId: item.id })),
-    },
-  }
+  const missing = withRecords(data, {
+    items: data.metadata.data.items.map((item) => ({
+      ...item,
+      photoId: item.id,
+    })),
+  })
   await expect(
     validateBackup(await (await packBackup(missing)).arrayBuffer()),
   ).rejects.toThrow('Image references')

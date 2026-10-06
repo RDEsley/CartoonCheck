@@ -2,7 +2,14 @@ import type { CartoonCheckDatabase } from '../../db/database'
 import { assertDatabaseReady, assertDataset } from '../../db/context'
 import type { CommandContext } from '../../db/context'
 import { createId } from '../../lib/create-id'
-import { backupSchema } from './format'
+import { z } from 'zod'
+import { imageAssetSchema } from '../../db/models'
+import { appVersion } from '../../app/version'
+import {
+  assertBackupAssets,
+  assertBackupRelations,
+  backupSchema,
+} from './format'
 import type { BackupData } from './format'
 export async function snapshotBackup(
   db: CartoonCheckDatabase,
@@ -23,12 +30,9 @@ export async function snapshotBackup(
       const metadata = backupSchema.parse({
         format: 'cartoon-check',
         formatVersion: 1,
-        databaseVersion: 1,
-        exportedAt: Date.now(),
-        profile: profile[0] ?? null,
-        lists,
-        items,
-        history,
+        exportedAt: new Date().toISOString(),
+        appVersion,
+        data: { profile: profile[0] ?? null, lists, items, history },
         assets: assets.map((asset) => ({
           id: asset.id,
           mime: asset.mime,
@@ -47,7 +51,13 @@ export async function replaceBackup(
   context: CommandContext,
   backup: BackupData,
 ) {
+  // Nothing is cleared before the whole backup has been validated again here:
+  // this command must be safe even when its caller skipped the file validation.
   const metadata = backupSchema.parse(backup.metadata)
+  const assets = z.array(imageAssetSchema).parse(backup.assets)
+  assertBackupRelations(metadata)
+  assertBackupAssets(metadata, assets)
+  const { profile, lists, items, history } = metadata.data
   assertDatabaseReady(db)
   return db.transaction(
     'rw',
@@ -61,11 +71,11 @@ export async function replaceBackup(
         db.assets.clear(),
         db.history.clear(),
       ])
-      if (metadata.profile) await db.profile.add(metadata.profile)
-      await db.lists.bulkAdd(metadata.lists)
-      await db.items.bulkAdd(metadata.items)
-      await db.assets.bulkAdd(backup.assets)
-      await db.history.bulkAdd(metadata.history)
+      if (profile) await db.profile.add(profile)
+      await db.lists.bulkAdd(lists)
+      await db.items.bulkAdd(items)
+      await db.assets.bulkAdd(assets)
+      await db.history.bulkAdd(history)
       await db.meta.put({ key: 'app', datasetEpoch: createId() })
     },
   )

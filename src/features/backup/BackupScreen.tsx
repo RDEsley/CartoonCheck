@@ -12,13 +12,20 @@ import { exportBackup, readBackup, downloadBackup } from './client'
 import { celebrations } from '../../celebrations/engine'
 import styles from '../../app/layout.module.css'
 import { PageHeading } from '../../components/PageHeading'
+const exportedAt = new Intl.DateTimeFormat('pt-BR', {
+  dateStyle: 'short',
+  timeStyle: 'short',
+})
 export function BackupScreen() {
   const { db, context, profile } = useRuntime()
   const { show, dismiss } = useFeedback()
   const navigate = useNavigate()
   const { pending, error, run } = useTask()
+  const saving = useTask()
   const [backup, setBackup] = useState<BackupData | null>(null)
   const [invalid, setInvalid] = useState('')
+  const [saved, setSaved] = useState(false)
+  const exportCurrent = async () => exportBackup(await snapshotBackup(db))
   return (
     <>
       <div className={styles.heading}>
@@ -41,13 +48,10 @@ export function BackupScreen() {
           <CartoonButton
             busy={pending}
             onClick={() => {
-              void run(
-                async () => exportBackup(await snapshotBackup(db)),
-                (blob) => {
-                  downloadBackup(blob)
-                  show('Backup exportado! Guarde seu arquivo.')
-                },
-              )
+              void run(exportCurrent, (blob) => {
+                downloadBackup(blob)
+                show('Backup exportado! Guarde seu arquivo.')
+              })
             }}
           >
             <Download size={20} />
@@ -70,8 +74,11 @@ export function BackupScreen() {
               accept=".zip,application/zip"
               onChange={(event) => {
                 const file = event.target.files?.[0]
+                // Clearing the field lets the same file be chosen again later.
+                event.target.value = ''
                 if (!file) return
                 setInvalid('')
+                setSaved(false)
                 void run(async () => {
                   try {
                     return await readBackup(file)
@@ -115,12 +122,40 @@ export function BackupScreen() {
           description="Tudo que está neste dispositivo será substituído. Não há como desfazer sem um backup anterior."
         >
           <div className="stack">
-            <p>
-              {backup.metadata.profile?.name ?? 'Sem perfil'} ·{' '}
-              {backup.metadata.lists.length} listas ·{' '}
-              {backup.metadata.items.length} itens ·{' '}
+            <p style={{ marginBottom: 0 }}>
+              {backup.metadata.data.profile?.name ?? 'Sem perfil'} ·{' '}
+              {backup.metadata.data.lists.length} listas ·{' '}
+              {backup.metadata.data.items.length} itens ·{' '}
               {backup.metadata.assets.length} fotos
+              <small
+                className="muted"
+                style={{ display: 'block', marginTop: 6 }}
+              >
+                Exportado em{' '}
+                {exportedAt.format(new Date(backup.metadata.exportedAt))} ·
+                versão {backup.metadata.appVersion}
+              </small>
             </p>
+            {profile && (
+              <>
+                <CartoonButton
+                  variant="quiet"
+                  busy={saving.pending}
+                  onClick={() => {
+                    void saving.run(exportCurrent, (blob) => {
+                      downloadBackup(blob)
+                      setSaved(true)
+                    })
+                  }}
+                >
+                  <Download size={20} />
+                  Exportar meus dados atuais antes
+                </CartoonButton>
+                <p role="status" className="muted" style={{ margin: 0 }}>
+                  {saved ? 'Cópia dos dados atuais exportada.' : ''}
+                </p>
+              </>
+            )}
             <CartoonButton
               variant="quiet"
               disabled={pending}
@@ -131,7 +166,8 @@ export function BackupScreen() {
               Cancelar restauração
             </CartoonButton>
             <CartoonButton
-              disabled={pending}
+              variant="danger"
+              disabled={pending || saving.pending}
               onClick={() => {
                 void run(
                   () => replaceBackup(db, context, backup),
@@ -147,9 +183,9 @@ export function BackupScreen() {
             >
               Substituir e restaurar
             </CartoonButton>
-            {error && (
+            {(error || saving.error) && (
               <p className="error" role="alert">
-                {error}
+                {error || saving.error}
               </p>
             )}
           </div>

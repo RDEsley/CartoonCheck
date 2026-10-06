@@ -17,21 +17,85 @@ const assetSchema = z.strictObject({
   byteLength: imageAssetSchema.shape.byteLength,
   createdAt: imageAssetSchema.shape.createdAt,
 })
+// The archive format is independent of the database schema: only formatVersion governs it.
 export const backupSchema = z.strictObject({
   format: z.literal('cartoon-check'),
   formatVersion: z.literal(1),
-  databaseVersion: z.literal(1),
-  exportedAt: z.number().int().nonnegative().max(8_640_000_000_000_000),
-  profile: profileSchema.nullable(),
-  lists: z.array(listSchema),
-  items: z.array(itemSchema),
-  history: z.array(historySchema),
+  exportedAt: z.iso.datetime(),
+  appVersion: z.string().regex(/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/),
+  data: z.strictObject({
+    profile: profileSchema.nullable(),
+    lists: z.array(listSchema),
+    items: z.array(itemSchema),
+    history: z.array(historySchema),
+  }),
   assets: z.array(assetSchema),
 })
 export type BackupMetadata = z.infer<typeof backupSchema>
 export interface BackupData {
   metadata: BackupMetadata
   assets: ImageAsset[]
+}
+/** Checks what the schema cannot: identities, parents and image references across records. */
+export function assertBackupRelations(metadata: BackupMetadata) {
+  const { profile, lists, items, history } = metadata.data
+  const unique = (ids: string[]) => {
+    const set = new Set(ids)
+    if (set.size !== ids.length) throw new Error('Duplicate records.')
+    return set
+  }
+  const listIds = unique(lists.map((list) => list.id))
+  unique(items.map((item) => item.id))
+  unique(history.map((entry) => entry.id))
+  const assetIds = unique(metadata.assets.map((asset) => asset.id))
+  if (
+    profile === null &&
+    (lists.length || items.length || history.length || metadata.assets.length)
+  )
+    throw new Error('A profile is required.')
+  const references = items.flatMap((item) =>
+    item.photoId ? [item.photoId] : [],
+  )
+  if (profile?.photoId) references.push(profile.photoId)
+  const referenced = unique(references)
+  if (
+    assetIds.size !== referenced.size ||
+    references.some((id) => !assetIds.has(id))
+  )
+    throw new Error('Image references do not match.')
+  if (items.some((item) => !listIds.has(item.listId)))
+    throw new Error('Item parent is missing.')
+  const avatar = metadata.assets.find((asset) => asset.id === profile?.photoId)
+  if (
+    avatar !== undefined &&
+    (avatar.width > 256 ||
+      avatar.height > 256 ||
+      avatar.byteLength > 128 * 1024)
+  )
+    throw new Error('Avatar exceeds its limits.')
+}
+/** Checks that the image records are exactly the ones the metadata declares. */
+export function assertBackupAssets(
+  metadata: BackupMetadata,
+  assets: readonly ImageAsset[],
+) {
+  const provided = new Map(assets.map((asset) => [asset.id, asset]))
+  if (
+    provided.size !== assets.length ||
+    assets.length !== metadata.assets.length
+  )
+    throw new Error('Image records do not match.')
+  for (const declared of metadata.assets) {
+    const asset = provided.get(declared.id)
+    if (
+      asset?.mime !== declared.mime ||
+      asset.width !== declared.width ||
+      asset.height !== declared.height ||
+      asset.byteLength !== declared.byteLength ||
+      asset.createdAt !== declared.createdAt
+    )
+      throw new Error('Image records do not match.')
+  }
 }
 export function assetPath(asset: Pick<ImageAsset, 'id' | 'mime'>) {
   return `assets/${asset.id}.${asset.mime === 'image/webp' ? 'webp' : 'jpg'}`
@@ -215,35 +279,7 @@ export async function validateBackup(
   const metadata = backupSchema.parse(
     JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(json)),
   )
-  const unique = (ids: string[]) => {
-    const set = new Set(ids)
-    if (set.size !== ids.length) throw new Error('Duplicate records.')
-    return set
-  }
-  const listIds = unique(metadata.lists.map((list) => list.id))
-  unique(metadata.items.map((item) => item.id))
-  unique(metadata.history.map((entry) => entry.id))
-  const assetIds = unique(metadata.assets.map((asset) => asset.id))
-  if (
-    metadata.profile === null &&
-    (metadata.lists.length ||
-      metadata.items.length ||
-      metadata.history.length ||
-      metadata.assets.length)
-  )
-    throw new Error('A profile is required.')
-  const references = metadata.items.flatMap((item) =>
-    item.photoId ? [item.photoId] : [],
-  )
-  if (metadata.profile?.photoId) references.push(metadata.profile.photoId)
-  const referencesSet = unique(references)
-  if (
-    assetIds.size !== referencesSet.size ||
-    references.some((id) => !assetIds.has(id))
-  )
-    throw new Error('Image references do not match.')
-  if (metadata.items.some((item) => !listIds.has(item.listId)))
-    throw new Error('Item parent is missing.')
+  assertBackupRelations(metadata)
   if (files.size !== metadata.assets.length + 1)
     throw new Error('Unexpected files in backup.')
   const assets: ImageAsset[] = []
@@ -270,11 +306,6 @@ export async function validateBackup(
     } finally {
       image.close()
     }
-    if (
-      metadata.profile?.photoId === meta.id &&
-      (meta.width > 256 || meta.height > 256 || meta.byteLength > 128 * 1024)
-    )
-      throw new Error('Avatar exceeds its limits.')
     assets.push(asset)
   }
   return { metadata, assets }
