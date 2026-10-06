@@ -10,6 +10,8 @@ export function errorMessage(error: unknown): string {
       return 'Remova os preços dos itens antes de trocar a moeda.'
     if (error.code === 'ARCHIVED_LIST')
       return 'Reative esta lista antes de editar.'
+    if (error.code === 'UNDO_UNAVAILABLE')
+      return 'Não dá mais para desfazer: os dados mudaram depois desta ação.'
     return 'Não foi possível salvar. Seus dados anteriores foram preservados.'
   }
   if (error instanceof ZodError)

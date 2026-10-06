@@ -9,12 +9,10 @@ import type { CommandContext } from '../../db/context'
 import { DataError } from '../../db/errors'
 import { appendHistory } from '../../db/history'
 import { itemSchema } from '../../db/models'
-import type { ShoppingItem } from '../../db/models'
 import { requireItem, requireList, touchList } from '../../db/records'
 import type { DeletedItem, PurchaseResult } from './commands'
 
 export type UndoAction =
-  | { kind: 'add'; item: ShoppingItem }
   | { kind: 'purchase'; result: PurchaseResult }
   | { kind: 'delete'; snapshot: DeletedItem }
 export async function undoItemAction(
@@ -29,11 +27,7 @@ export async function undoItemAction(
     async () => {
       await assertDataset(db, context)
       const expected =
-        action.kind === 'delete'
-          ? action.snapshot.item
-          : action.kind === 'purchase'
-            ? action.result.item
-            : action.item
+        action.kind === 'delete' ? action.snapshot.item : action.result.item
       const list = await requireList(db, expected.listId, true)
       const time = updatedTime(expected.updatedAt, list.updatedAt)
       if (action.kind === 'delete') {
@@ -59,30 +53,24 @@ export async function undoItemAction(
       } else {
         const current = await requireItem(db, expected.id)
         assertRevision(current.revision, expected.revision)
-        if (action.kind === 'add') {
-          if (current.photoId !== null) await db.assets.delete(current.photoId)
-          await db.items.delete(current.id)
-          await appendHistory(db, 'item_removed', list, time, current)
-        } else {
-          if (!action.result.changed)
-            throw new DataError('CONFLICT', 'There is no purchase to undo.')
-          const restored = itemSchema.parse({
-            ...current,
-            ...action.result.previousPurchase,
-            revision: current.revision + 1,
-            updatedAt: time,
-          })
-          await db.items.put(restored)
-          await appendHistory(
-            db,
-            restored.status === 'purchased'
-              ? 'item_purchased'
-              : 'item_purchase_undone',
-            list,
-            time,
-            restored,
-          )
-        }
+        if (!action.result.changed)
+          throw new DataError('CONFLICT', 'There is no purchase to undo.')
+        const restored = itemSchema.parse({
+          ...current,
+          ...action.result.previousPurchase,
+          revision: current.revision + 1,
+          updatedAt: time,
+        })
+        await db.items.put(restored)
+        await appendHistory(
+          db,
+          restored.status === 'purchased'
+            ? 'item_purchased'
+            : 'item_purchase_undone',
+          list,
+          time,
+          restored,
+        )
       }
       await touchList(db, list, time)
     },

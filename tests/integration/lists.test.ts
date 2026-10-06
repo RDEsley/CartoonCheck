@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { attachPhoto, openTestDatabase, shoppingDatabase } from '../helpers/database'
 import {
-  archiveList, createList, deleteList, reactivateList, updateList,
+  archiveList, createList, deleteList, reactivateList, undoArchiveChange, updateList,
 } from '../../src/features/lists/commands'
 import { addItem, deleteItem, setPurchased, updateItem } from '../../src/features/items/commands'
 import { getListIds, getListSummary } from '../../src/features/lists/queries'
@@ -52,6 +52,19 @@ describe('shopping list commands', () => {
       .rejects.toMatchObject({ code: 'CONFLICT' })
     expect(await db.lists.get(list.id)).toEqual(renamed)
     expect(await getHistoryPage(db)).toMatchObject([{ listName: 'Japão' }])
+  })
+
+  it('undoes archiving and reactivation only while the list is unchanged', async () => {
+    const { db, context } = await shoppingDatabase()
+    const list = await createList(db, context, { name: 'Japão' })
+    const archived = await archiveList(db, context, list.id)
+    const restored = await undoArchiveChange(db, context, archived)
+    expect(restored).toMatchObject({ status: 'active', revision: archived.revision + 1 })
+    await expect(undoArchiveChange(db, context, archived)).rejects.toMatchObject({ code: 'CONFLICT' })
+    expect(await undoArchiveChange(db, context, restored)).toMatchObject({ status: 'archived' })
+    expect((await getHistoryPage(db, 0, list.id)).map((entry) => entry.action))
+      .toEqual(expect.arrayContaining(['list_archived', 'list_reactivated']))
+    expect((await db.lists.get(list.id))?.status).toBe('archived')
   })
 
   it('archives idempotently and prevents mutations until reactivated', async () => {

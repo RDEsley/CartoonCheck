@@ -1,16 +1,20 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { X, Undo2 } from 'lucide-react'
 import { useRuntime } from './context'
 import { FeedbackContext } from './feedback-context'
-import type { Feedback } from './feedback-context'
+import type { Feedback, FeedbackAction } from './feedback-context'
+import type { Runtime } from './context'
 import { useTask } from '../hooks/useTask'
 import { undoItemAction } from '../features/items/undo'
-import type { UndoAction } from '../features/items/undo'
+import { undoArchiveChange } from '../features/lists/commands'
+import { DataError } from '../db/errors'
 import { CartoonButton } from '../components/CartoonButton'
 import styles from './feedback.module.css'
 import { celebrations } from '../celebrations/engine'
 const repeatMarker = String.fromCharCode(0xa0)
+// A confirmation leaves on its own; a bar that offers undo stays until dismissed.
+const confirmationTime = 8000
 // Reserves room below the page content so the bar never hides the last row.
 function reserveSpace(element: HTMLElement | null) {
   if (element === null) return
@@ -30,9 +34,27 @@ function reserveSpace(element: HTMLElement | null) {
     root.style.removeProperty('--toast-space')
   }
 }
+async function undo(
+  { db, context }: Pick<Runtime, 'db' | 'context'>,
+  action: FeedbackAction,
+) {
+  try {
+    if (action.kind === 'archive')
+      await undoArchiveChange(db, context, action.list)
+    else await undoItemAction(db, context, action)
+  } catch (error) {
+    // The data moved on after the action, so this token can no longer apply.
+    if (
+      error instanceof DataError &&
+      (error.code === 'CONFLICT' || error.code === 'NOT_FOUND')
+    )
+      throw new DataError('UNDO_UNAVAILABLE', error.message)
+    throw error
+  }
+}
 // The Undo button disappears once used, so focus moves to the restored item
 // when it is on screen, or to the page title. A pointer never scrolls the page.
-function focusAfterUndo(action: UndoAction, viaKeyboard: boolean) {
+function focusAfterUndo(action: FeedbackAction, viaKeyboard: boolean) {
   const expected =
     action.kind === 'delete'
       ? action.snapshot.item
@@ -61,7 +83,7 @@ function focusAfterUndo(action: UndoAction, viaKeyboard: boolean) {
 }
 interface Toast {
   message: string
-  action?: UndoAction
+  action?: FeedbackAction
   note?: string
 }
 export function FeedbackProvider({ children }: { children: ReactNode }) {
@@ -93,10 +115,26 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
     }),
     [announce],
   )
+  useEffect(() => {
+    if (toast === null || (toast.action && !toast.note)) return
+    const timer = setTimeout(() => {
+      setToast((current) =>
+        current !== toast
+          ? current
+          : toast.action
+            ? { message: toast.message, action: toast.action }
+            : null,
+      )
+    }, confirmationTime)
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [toast])
   return (
     <FeedbackContext.Provider value={feedback}>
       {children}
-      <p role="status" className="sr-only">
+      {/* The explicit aria-live keeps this region exposed while a sheet is open. */}
+      <p role="status" aria-live="polite" className="sr-only">
         {announcement}
       </p>
       {toast && (
@@ -121,7 +159,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
                   celebrations.cancel()
                   if (action)
                     void run(
-                      () => undoItemAction(db, context, action),
+                      () => undo({ db, context }, action),
                       () => {
                         celebrations.cancel()
                         setToast((current) =>

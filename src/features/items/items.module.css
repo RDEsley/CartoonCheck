@@ -63,13 +63,6 @@
   text-decoration-thickness: 2px;
   text-decoration-color: var(--success);
 }
-.notice {
-  min-height: 24px;
-  margin: 20px 0;
-  font-size: 14px;
-  color: var(--success);
-  font-weight: 800;
-}
 /* The add button is docked above the navigation so adding is always one tap away. */
 .addButton {
   position: fixed;

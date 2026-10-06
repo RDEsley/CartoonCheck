@@ -10,6 +10,7 @@ import {
   ArchiveRestore,
 } from 'lucide-react'
 import { useRuntime } from '../../app/context'
+import { useFeedback } from '../../app/feedback-context'
 import { BottomSheet } from '../../components/BottomSheet'
 import { CartoonButton } from '../../components/CartoonButton'
 import { EmptyState } from '../../components/EmptyState'
@@ -37,6 +38,7 @@ export function ListScreen() {
   const [editing, setEditing] = useState<ShoppingList | null>(null)
   const [deleting, setDeleting] = useState<ShoppingList | null>(null)
   const { pending, error, run } = useTask()
+  const { show } = useFeedback()
   useDocumentTitle(summary === null ? 'Lista não encontrada' : null)
   if (summary === undefined) return <p role="status">Abrindo lista…</p>
   if (summary === null)
@@ -124,8 +126,15 @@ export function ListScreen() {
                     list.status === 'active'
                       ? archiveList(db, context, list.id)
                       : reactivateList(db, context, list.id),
-                  () => {
+                  (changed) => {
                     setMenu(false)
+                    if (changed.revision !== list.revision)
+                      show(
+                        changed.status === 'archived'
+                          ? 'Lista arquivada.'
+                          : 'Lista reativada.',
+                        { kind: 'archive', list: changed },
+                      )
                   },
                 )
               }}

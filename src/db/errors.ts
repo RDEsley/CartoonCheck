@@ -8,6 +8,7 @@ export type DataErrorCode =
   | 'PROFILE_EXISTS'
   | 'PROFILE_REQUIRED'
   | 'CURRENCY_LOCKED'
+  | 'UNDO_UNAVAILABLE'
 
 export class DataError extends Error {
   constructor(

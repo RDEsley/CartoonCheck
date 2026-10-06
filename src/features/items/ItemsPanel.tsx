@@ -23,7 +23,6 @@ export function ItemsPanel({ list }: { list: ShoppingList }) {
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState<ShoppingItem | null>(null)
   const editedItem = editing ?? requestedItem ?? null
-  const [notice, setNotice] = useState('')
   const tabs = useRef<HTMLDivElement>(null)
   const ids = useLiveQuery(
     () => getItemIds(db, list.id, tab),
@@ -107,9 +106,6 @@ export function ItemsPanel({ list }: { list: ShoppingList }) {
           </ul>
         )}
       </section>
-      <p role="status" className={styles.notice}>
-        {notice}
-      </p>
       {list.status === 'active' && (
         <CartoonButton
           className={styles.addButton}
@@ -144,7 +140,6 @@ export function ItemsPanel({ list }: { list: ShoppingList }) {
             search.delete('itemEdit')
             setSearch(search, { replace: true })
           }}
-          changed={setNotice}
         />
       )}
     </>

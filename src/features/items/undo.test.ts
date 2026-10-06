@@ -43,11 +43,3 @@ it('restores a removed item with its photo and rolls back if history fails', asy
   expect((await db.items.get(item.id))?.photoId).toBe(photo.id)
   expect((await db.assets.get(photo.id))?.blob.size).toBe(photo.blob.size)
 })
-it('undoes an addition only while its original item is unchanged', async () => {
-  const { db, context } = await shoppingDatabase()
-  const list = await createList(db, context, { name: 'Japan' })
-  const item = await addItem(db, context, list.id, { name: 'KitKat' })
-  await undoItemAction(db, context, { kind: 'add', item })
-  expect(await db.items.get(item.id)).toBeUndefined()
-  expect(await db.history.filter((entry) => entry.action === 'item_removed').count()).toBe(1)
-})

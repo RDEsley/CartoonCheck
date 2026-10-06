@@ -65,11 +65,13 @@ async function setArchived(
   context: CommandContext,
   id: string,
   archived: boolean,
+  expectedRevision?: number,
 ): Promise<ShoppingList> {
   assertDatabaseReady(db)
   return db.transaction('rw', [db.meta, db.lists, db.history], async () => {
     await assertDataset(db, context)
     const current = await requireList(db, id)
+    if (expectedRevision !== undefined) assertRevision(current.revision, expectedRevision)
     const status = archived ? 'archived' : 'active'
     if (current.status === status) return current
     const list = listSchema.parse({
@@ -87,6 +89,15 @@ export function archiveList(db: CartoonCheckDatabase, context: CommandContext, i
 
 export function reactivateList(db: CartoonCheckDatabase, context: CommandContext, id: string) {
   return setArchived(db, context, id, false)
+}
+
+/** Reverts an archive or reactivation, given the list as that change left it. */
+export function undoArchiveChange(
+  db: CartoonCheckDatabase,
+  context: CommandContext,
+  changed: ShoppingList,
+) {
+  return setArchived(db, context, changed.id, changed.status !== 'archived', changed.revision)
 }
 
 export async function deleteList(

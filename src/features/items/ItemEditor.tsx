@@ -23,12 +23,10 @@ export function ItemEditor({
   item: sourceItem,
   list: sourceList,
   close,
-  changed,
 }: {
   item: ShoppingItem
   list: ShoppingList
   close: () => void
-  changed: (notice: string) => void
 }) {
   const [item] = useState(sourceItem)
   const [list] = useState(sourceList)
@@ -134,7 +132,7 @@ export function ItemEditor({
             () => {
               discardDraft(scope)
               close()
-              changed('Item atualizado!')
+              show('Item atualizado!')
             },
           )
         }}

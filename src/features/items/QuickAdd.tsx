@@ -53,7 +53,7 @@ export function QuickAdd({
               discardDraft(scope)
               cancel()
               setNotice(`${item.name} adicionado!`)
-              show('Item adicionado!', { kind: 'add', item })
+              show(`${item.name} adicionado!`)
               added()
               input.current?.focus()
             },
@@ -85,11 +85,8 @@ export function QuickAdd({
           <Plus size={22} />
           {pending ? 'Adicionando…' : 'Adicionar'}
         </CartoonButton>
-        <p
-          role="status"
-          className="muted"
-          style={{ minHeight: 24, marginBottom: 0 }}
-        >
+        {/* Announced by the feedback region, which stays exposed above the sheet. */}
+        <p className="muted" style={{ minHeight: 24, marginBottom: 0 }}>
           {notice}
         </p>
         {error && (
