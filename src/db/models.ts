@@ -141,6 +141,13 @@ export const updateProfileSchema = z.strictObject({
 }).partial()
   .refine((input) => Object.keys(input).length > 0, 'Provide at least one change.')
 
+export const preferencesSchema = z.strictObject({
+  themeId: z.enum(themes),
+  reduceMotion: z.boolean(),
+  hapticsEnabled: z.boolean(),
+}).partial()
+  .refine((input) => Object.keys(input).length > 0, 'Provide at least one change.')
+
 export const createListSchema = z.strictObject({
   name: inputName,
   emoji: emoji.default(null),
@@ -190,6 +197,7 @@ export type HistoryEntry = z.infer<typeof historySchema>
 export type AppMeta = z.infer<typeof metaSchema>
 export type CreateProfileInput = z.input<typeof createProfileSchema>
 export type UpdateProfileInput = z.input<typeof updateProfileSchema>
+export type PreferencesInput = z.input<typeof preferencesSchema>
 export type CreateListInput = z.input<typeof createListSchema>
 export type UpdateListInput = z.input<typeof updateListSchema>
 export type CreateItemInput = z.input<typeof createItemSchema>

@@ -1,10 +1,26 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
 import { openTestDatabase, shoppingDatabase } from '../helpers/database'
-import { createProfile, updateProfile } from '../../src/features/profile/commands'
+import { createProfile, updatePreferences, updateProfile } from '../../src/features/profile/commands'
 import { createId } from '../../src/lib/create-id'
 
 describe('local profile commands', () => {
+  it('stores preference changes made in quick succession without a revision', async () => {
+    const { db, context, profile } = await shoppingDatabase()
+    const [motion, haptics] = await Promise.all([
+      updatePreferences(db, context, { reduceMotion: true }),
+      updatePreferences(db, context, { hapticsEnabled: false }),
+    ])
+    expect(Math.max(motion.revision, haptics.revision)).toBe(profile.revision + 2)
+    expect(await db.profile.get(profile.id)).toMatchObject({
+      reduceMotion: true, hapticsEnabled: false, name: 'Richard', revision: profile.revision + 2,
+    })
+    await expect(updatePreferences(db, context, {})).rejects.toThrow()
+    await db.meta.put({ key: 'app', datasetEpoch: createId() })
+    await expect(updatePreferences(db, context, { themeId: 'sakura' }))
+      .rejects.toMatchObject({ code: 'STALE_DATASET' })
+  })
+
   it('persists one profile and its defaults', async () => {
     const { db, profile } = await shoppingDatabase()
     expect(await db.profile.get(profile.id)).toMatchObject({

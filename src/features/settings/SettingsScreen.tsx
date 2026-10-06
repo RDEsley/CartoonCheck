@@ -1,12 +1,13 @@
 import { Link } from 'react-router'
-import { useEffect, useState } from 'react'
-import type { Profile } from '../../db/models'
+import { useEffect, useRef, useState } from 'react'
+import type { PreferencesInput, Profile } from '../../db/models'
 import { useRuntime } from '../../app/context'
 import { useFeedback } from '../../app/feedback-context'
 import { BrandArt } from '../../components/BrandArt'
 import { CartoonButton } from '../../components/CartoonButton'
-import { updateProfile } from '../profile/commands'
-import { useTask } from '../../hooks/useTask'
+import { updatePreferences } from '../profile/commands'
+import { errorMessage } from '../../lib/error-message'
+import { beginOperation, operationsPaused } from '../../pwa/operations'
 import { themes } from '../../db/models'
 import styles from '../../app/layout.module.css'
 import settingsStyles from './settings.module.css'
@@ -27,10 +28,13 @@ const themeLabels = {
 export function SettingsScreen() {
   const { profile, db, context } = useRuntime()
   const { show } = useFeedback()
-  // Controls stay enabled while saving so keyboard focus is not dropped;
-  // the task ignores a change that arrives before the previous one is stored.
-  const { error, run } = useTask()
-  const [local, setLocal] = useState<Profile | null>(null)
+  // Controls stay enabled while saving, so keyboard focus is not dropped, and
+  // changes are stored one after another, so a quick second one is never lost.
+  const [error, setError] = useState('')
+  const [draft, setDraft] = useState<PreferencesInput>({})
+  const [saved, setSaved] = useState<Profile | null>(null)
+  const queue = useRef(Promise.resolve())
+  const waiting = useRef(0)
   const [storage, setStorage] = useState<StorageState | null>(null)
   useEffect(() => {
     let active = true
@@ -42,17 +46,30 @@ export function SettingsScreen() {
     }
   }, [])
   if (profile === null) return null
-  const selected = local?.revision === profile.revision ? local : profile
-  function change(
-    fields: Partial<Pick<Profile, 'reduceMotion' | 'hapticsEnabled'>>,
-  ) {
-    if (profile === null) return
-    setLocal({ ...profile, ...fields })
-    void run(() => updateProfile(db, context, fields, profile.revision)).then(
-      (success) => {
-        if (!success) setLocal(null)
-      },
-    )
+  // What was just saved is shown until the live profile catches up with it.
+  const stored =
+    saved !== null && saved.revision >= profile.revision ? saved : profile
+  const selected = { ...stored, ...draft }
+  function change(fields: PreferencesInput, done?: () => void) {
+    if (operationsPaused()) {
+      setError('Espere a atualização terminar antes de salvar.')
+      return
+    }
+    setDraft((current) => ({ ...current, ...fields }))
+    waiting.current++
+    const finish = beginOperation()
+    queue.current = queue.current.then(async () => {
+      try {
+        setSaved(await updatePreferences(db, context, fields))
+        setError('')
+        done?.()
+      } catch (reason) {
+        setError(errorMessage(reason))
+      } finally {
+        finish()
+        if (--waiting.current === 0) setDraft({})
+      }
+    })
   }
   return (
     <>
@@ -94,18 +111,9 @@ export function SettingsScreen() {
                 aria-label={themeLabels[theme]}
                 checked={selected.themeId === theme}
                 onChange={() => {
-                  void run(
-                    () =>
-                      updateProfile(
-                        db,
-                        context,
-                        { themeId: theme },
-                        profile.revision,
-                      ),
-                    () => {
-                      show(`Tema ${themeLabels[theme]} aplicado!`)
-                    },
-                  )
+                  change({ themeId: theme }, () => {
+                    show(`Tema ${themeLabels[theme]} aplicado!`)
+                  })
                 }}
               />
               <BrandArt
