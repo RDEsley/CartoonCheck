@@ -105,9 +105,11 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
           className={styles.toast}
           aria-label="Última ação"
         >
-          <p>{toast.message}</p>
-          {toast.note && <p className={styles.note}>{toast.note}</p>}
-          <div className="row">
+          <div className={styles.text}>
+            <p>{toast.message}</p>
+            {toast.note && <p className={styles.note}>{toast.note}</p>}
+          </div>
+          <div className={styles.actions}>
             {toast.action && (
               <CartoonButton
                 variant="quiet"
@@ -146,7 +148,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
             </button>
           </div>
           {error && (
-            <p className="error" role="alert">
+            <p className={['error', styles.problem].join(' ')} role="alert">
               {error}
             </p>
           )}

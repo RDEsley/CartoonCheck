@@ -1,34 +1,52 @@
 .toast {
   position: fixed;
   z-index: var(--z-toast);
-  bottom: calc(100px + env(safe-area-inset-bottom));
+  bottom: calc(100px + var(--dock-space, 0px) + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
-  width: min(90%, 440px);
-  padding: 14px 16px;
+  width: min(92%, 480px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 10px 8px 10px 16px;
   border: 2px solid var(--ink);
   background: var(--surface);
   border-radius: 15px 19px 14px 17px;
   box-shadow: var(--shadow);
   animation: appear var(--normal) ease-out;
 }
+.text {
+  flex: 1 1 96px;
+  min-width: 0;
+}
 .toast p {
-  margin-bottom: 12px;
+  margin: 0;
   font-size: 14px;
   font-weight: 800;
+  overflow-wrap: anywhere;
 }
 .toast .note {
+  margin-top: 4px;
   font-weight: 600;
   color: var(--muted);
 }
-.toast .close {
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   margin-left: auto;
+}
+.toast .close {
   min-width: 48px;
   height: 48px;
   border: 0;
   border-radius: 12px;
   color: var(--text);
   background: transparent;
+}
+.toast .problem {
+  flex-basis: 100%;
 }
 @keyframes appear {
   from {

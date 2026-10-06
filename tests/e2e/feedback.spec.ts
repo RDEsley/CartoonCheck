@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
-test('keeps the feedback bar below open sheets and clear of the last row', async ({
+import type { Locator } from '@playwright/test'
+test('keeps the feedback bar below open sheets and clear of the add button and last row', async ({
   page,
 }) => {
   await page.goto('/app')
@@ -35,10 +36,21 @@ test('keeps the feedback bar below open sheets and clear of the last row', async
   await page.evaluate(() => {
     window.scrollTo(0, document.documentElement.scrollHeight)
   })
-  const add = await page
-    .getByRole('button', { name: 'Adicionar', exact: true })
-    .boundingBox()
-  const feedback = await bar.boundingBox()
-  if (add === null || feedback === null) throw new Error('Layout unavailable')
-  expect(add.y + add.height).toBeLessThanOrEqual(feedback.y)
+  const box = async (locator: Locator) => {
+    const rectangle = await locator.boundingBox()
+    if (rectangle === null) throw new Error('Layout unavailable')
+    return rectangle
+  }
+  const navigation = await box(
+    page.getByRole('navigation', { name: 'Navegação principal' }),
+  )
+  const add = await box(page.getByRole('button', { name: 'Adicionar', exact: true }))
+  const feedback = await box(bar)
+  const last = await box(
+    page.getByRole('button', { name: 'Lembrança 10', exact: true }),
+  )
+  // From the bottom up: navigation, docked add button, feedback bar, content.
+  expect(add.y + add.height).toBeLessThanOrEqual(navigation.y)
+  expect(feedback.y + feedback.height).toBeLessThanOrEqual(add.y)
+  expect(last.y + last.height).toBeLessThanOrEqual(feedback.y)
 })

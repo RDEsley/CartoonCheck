@@ -70,6 +70,15 @@
   color: var(--success);
   font-weight: 800;
 }
+/* The add button is docked above the navigation so adding is always one tap away. */
 .addButton {
-  width: 100%;
+  position: fixed;
+  z-index: 20;
+  left: 50%;
+  bottom: calc(100px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(92%, 480px);
+}
+:global(:root):has(.addButton) {
+  --dock-space: 64px;
 }

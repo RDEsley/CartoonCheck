@@ -12,6 +12,11 @@
   background: var(--background);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  /* Keeps a focused control clear of the bars fixed at the bottom. */
+  scroll-padding-bottom: calc(
+    120px + var(--dock-space, 0px) + var(--toast-space, 0px) +
+      env(safe-area-inset-bottom)
+  );
 }
 *,
 *::before,

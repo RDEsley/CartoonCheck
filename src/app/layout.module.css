@@ -26,7 +26,10 @@
   max-width: 720px;
   margin: 0 auto;
   padding: 44px 0
-    calc(120px + var(--toast-space, 0px) + env(safe-area-inset-bottom));
+    calc(
+      120px + var(--dock-space, 0px) + var(--toast-space, 0px) +
+        env(safe-area-inset-bottom)
+    );
 }
 .nav {
   position: fixed;
