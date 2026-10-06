@@ -57,7 +57,17 @@ export function initialDraftField(
     : fallback
 }
 export function checkpointDraft(draft: Draft) {
-  const value = schema.parse(draft)
+  const parsed = schema.safeParse(draft)
+  if (!parsed.success) {
+    // A value too large to checkpoint leaves this edit unprotected, so an
+    // update has to wait for it; the form itself keeps working.
+    if (!failed) {
+      failed = true
+      notify()
+    }
+    return
+  }
+  const value = parsed.data
   if (JSON.stringify(current) === JSON.stringify(value) && !failed) return
   current = value
   try {

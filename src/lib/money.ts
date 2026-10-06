@@ -1,4 +1,6 @@
+import { isExchangeRate } from '../db/models'
 import type { ShoppingList } from '../db/models'
+import { InputError } from './input-error'
 type Currency = ShoppingList['currency']
 export function currencyDigits(currency: Currency) {
   return (
@@ -12,14 +14,14 @@ export function parsePrice(value: string, currency: Currency): number | null {
   const normalized = value.trim().replace(',', '.')
   if (normalized === '') return null
   const digits = currencyDigits(currency)
-  if (!/^\d+(?:\.\d+)?$/.test(normalized)) throw new Error('Invalid price')
+  if (!/^\d+(?:\.\d+)?$/.test(normalized)) throw new InputError('price-format')
   const [whole = '', fraction = ''] = normalized.split('.')
-  if (fraction.length > digits) throw new Error('Too many decimal places')
+  if (fraction.length > digits) throw new InputError('price-decimals')
   const minor =
     BigInt(whole) * 10n ** BigInt(digits) +
     BigInt(fraction.padEnd(digits, '0') || '0')
   if (minor > BigInt(Number.MAX_SAFE_INTEGER))
-    throw new Error('Price is too large')
+    throw new InputError('price-range')
   return Number(minor)
 }
 export function editPrice(value: number | null, currency: Currency) {
@@ -62,4 +64,10 @@ export function canonicalRate(value: string) {
     .replace(',', '.')
     .replace(/(\.\d*?)0+$/, '$1')
     .replace(/\.$/, '')
+}
+/** The canonical form of a rate typed with a comma or a dot. */
+export function parseRate(value: string): string {
+  const rate = canonicalRate(value)
+  if (!isExchangeRate(rate)) throw new InputError('rate')
+  return rate
 }

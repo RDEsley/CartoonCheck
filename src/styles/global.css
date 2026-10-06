@@ -67,6 +67,10 @@ select {
 textarea {
   resize: vertical;
 }
+[aria-invalid='true'] {
+  border-color: var(--danger);
+  border-width: 3px;
+}
 ::placeholder {
   color: var(--muted);
   opacity: 1;

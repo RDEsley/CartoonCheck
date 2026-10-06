@@ -9,6 +9,13 @@ const inputMessages: Record<InputProblem, string> = {
   'image-decode': 'Não conseguimos abrir esta foto. Tente outro arquivo.',
   'image-fit':
     'Não foi possível reduzir esta foto o bastante. Tente outra imagem.',
+  'price-format':
+    'Use só números no preço, com vírgula ou ponto antes dos centavos.',
+  'price-decimals':
+    'Este preço tem casas decimais demais para a moeda da lista.',
+  'price-range': 'Este preço é grande demais.',
+  rate: 'Informe uma cotação maior que zero, com até 8 casas decimais e sem separador de milhares.',
+  link: 'Use um link que comece com http:// ou https://.',
 }
 // Dexie reports a full disk as the cause of an aborted transaction.
 function isQuotaError(error: unknown): boolean {

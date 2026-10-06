@@ -46,10 +46,12 @@ export function QuickAdd({
         onSubmit={(event) => {
           event.preventDefault()
           if (!name.trim()) return
+          const submitted = name
           void run(
-            () => addItem(db, context, listId, { name }),
+            () => addItem(db, context, listId, { name: submitted }),
             (item) => {
-              setName('')
+              // Whatever was typed while this item was being saved stays.
+              setName((current) => (current === submitted ? '' : current))
               discardDraft(scope)
               cancel()
               setNotice(`${item.name} adicionado!`)

@@ -17,3 +17,11 @@ it('retains a draft in memory and blocks updates when session storage is full', 
   expect(draftIsSafe()).toBe(false)
   expect(getDraftSnapshot().draft?.fields.name).toBe('Unsaved Switch')
 })
+it('keeps the form working and blocks updates when a field is too large to checkpoint', async () => {
+  const { checkpointDraft, draftIsSafe } = await import('./drafts')
+  const draft = { version: 1 as const, scope: 'item:camera', epoch: createId(), revision: 1, route: '/app', fields: { planned: '9'.repeat(5000) } }
+  expect(() => { checkpointDraft(draft) }).not.toThrow()
+  expect(draftIsSafe()).toBe(false)
+  checkpointDraft({ ...draft, fields: { planned: '10' } })
+  expect(draftIsSafe()).toBe(true)
+})

@@ -28,5 +28,8 @@ export function useTask() {
       setPending(false)
     }
   }
-  return { pending, error, run }
+  const clearError = () => {
+    setError('')
+  }
+  return { pending, error, run, clearError }
 }

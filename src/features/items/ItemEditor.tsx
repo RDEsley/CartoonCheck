@@ -11,6 +11,7 @@ import { useFeedback } from '../../app/feedback-context'
 import { compressImage } from './images'
 import { errorMessage } from '../../lib/error-message'
 import { editPrice, parsePrice } from '../../lib/money'
+import { parseLink } from '../../lib/link'
 import { BlobImage, StoredImage } from '../../components/StoredImage'
 import { celebrations } from '../../celebrations/engine'
 import { useFormDraft } from '../../hooks/useFormDraft'
@@ -66,7 +67,29 @@ export function ItemEditor({
   )
   const [photoError, setPhotoError] = useState('')
   const [processing, setProcessing] = useState(false)
-  const { pending, error, run } = useTask()
+  const { pending, error, run, clearError } = useTask()
+  const [invalid, setInvalid] = useState('')
+  // The message leaves as soon as the rejected field is edited again.
+  const edited = (field: string) => {
+    if (invalid !== field) return
+    setInvalid('')
+    clearError()
+  }
+  // Marks and focuses the field whose value was rejected, so the message
+  // below the form is tied to it.
+  const read = <T,>(field: string, parse: () => T) => {
+    try {
+      return parse()
+    } catch (reason) {
+      setInvalid(field)
+      document.getElementById(`item-${field}`)?.focus()
+      throw reason
+    }
+  }
+  const described = (field: string) =>
+    invalid === field
+      ? ({ 'aria-invalid': true, 'aria-describedby': 'item-error' } as const)
+      : {}
   const draftConflict = useFormDraft(
     scope,
     item.revision,
@@ -111,6 +134,7 @@ export function ItemEditor({
         className="stack"
         onSubmit={(event) => {
           event.preventDefault()
+          setInvalid('')
           void run(
             () =>
               updateItem(
@@ -120,12 +144,16 @@ export function ItemEditor({
                 {
                   name,
                   quantity: Number(quantity),
-                  plannedPriceMinor: parsePrice(planned, currency),
-                  paidPriceMinor: parsePrice(paid, currency),
+                  plannedPriceMinor: read('planned', () =>
+                    parsePrice(planned, currency),
+                  ),
+                  paidPriceMinor: read('paid', () =>
+                    parsePrice(paid, currency),
+                  ),
                   expectedCurrency: currency,
                   note: note || null,
                   store: store.trim() || null,
-                  link: link.trim() || null,
+                  link: read('link', () => parseLink(link)),
                 },
                 item.revision,
                 photo,
@@ -218,22 +246,30 @@ export function ItemEditor({
         <label>
           Preço planejado ({currency})
           <input
+            id="item-planned"
             inputMode="decimal"
+            maxLength={24}
             value={planned}
             onChange={(event) => {
               setPlanned(event.target.value)
+              edited('planned')
             }}
             placeholder={currency === 'JPY' ? 'Ex.: 45000' : 'Ex.: 120,50'}
+            {...described('planned')}
           />
         </label>
         <label>
           Preço pago ({currency})
           <input
+            id="item-paid"
             inputMode="decimal"
+            maxLength={24}
             value={paid}
             onChange={(event) => {
               setPaid(event.target.value)
+              edited('paid')
             }}
+            {...described('paid')}
           />
         </label>
         <p className="muted" style={{ margin: 0, fontSize: 14 }}>
@@ -264,13 +300,16 @@ export function ItemEditor({
         <label>
           Link
           <input
+            id="item-link"
             type="url"
             maxLength={2048}
             value={link}
             onChange={(event) => {
               setLink(event.target.value)
+              edited('link')
             }}
             placeholder="https://…"
+            {...described('link')}
           />
         </label>
         <CartoonButton
@@ -298,7 +337,7 @@ export function ItemEditor({
           Excluir item
         </CartoonButton>
         {error && (
-          <p className="error" role="alert">
+          <p id="item-error" className="error" role="alert">
             {error}
           </p>
         )}

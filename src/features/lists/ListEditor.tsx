@@ -6,7 +6,7 @@ import { currencies } from '../../db/models'
 import type { ShoppingList } from '../../db/models'
 import { useTask } from '../../hooks/useTask'
 import { createList, updateList } from './commands'
-import { canonicalRate } from '../../lib/money'
+import { parseRate } from '../../lib/money'
 import { useFormDraft } from '../../hooks/useFormDraft'
 import { discardDraft, initialDraftField } from '../../pwa/drafts'
 
@@ -33,7 +33,7 @@ export function ListEditor({
         (value) => value === initial('currency', list?.currency ?? 'BRL'),
       ) ?? 'BRL',
   )
-  const { pending, error, run } = useTask()
+  const { pending, error, run, clearError } = useTask()
   const [secondary, setSecondary] = useState<ShoppingList['secondaryCurrency']>(
     () =>
       currencies.find(
@@ -44,6 +44,17 @@ export function ListEditor({
   const [rate, setRate] = useState(() =>
     initial('rate', list?.manualExchangeRate ?? ''),
   )
+  const [invalidRate, setInvalidRate] = useState(false)
+  // Marks and focuses the rate field when its value is rejected.
+  const readRate = () => {
+    try {
+      return parseRate(rate)
+    } catch (reason) {
+      setInvalidRate(true)
+      document.getElementById('list-rate')?.focus()
+      throw reason
+    }
+  }
   useFormDraft(
     scope,
     revision,
@@ -73,18 +84,20 @@ export function ListEditor({
         className="stack"
         onSubmit={(event) => {
           event.preventDefault()
-          const fields = {
-            name,
-            emoji: emoji.trim() || null,
-            currency,
-            secondaryCurrency: secondary,
-            manualExchangeRate: secondary ? canonicalRate(rate) : null,
-          }
+          setInvalidRate(false)
           void run(
-            () =>
-              list
+            async () => {
+              const fields = {
+                name,
+                emoji: emoji.trim() || null,
+                currency,
+                secondaryCurrency: secondary,
+                manualExchangeRate: secondary ? readRate() : null,
+              }
+              return list
                 ? updateList(db, context, list.id, fields, list.revision)
-                : createList(db, context, fields),
+                : createList(db, context, fields)
+            },
             (result) => {
               discardDraft(scope)
               close()
@@ -181,12 +194,24 @@ export function ListEditor({
               <label>
                 1 {currency} vale quantos {secondary}?
                 <input
+                  id="list-rate"
                   inputMode="decimal"
+                  maxLength={24}
                   value={rate}
                   onChange={(event) => {
                     setRate(event.target.value)
+                    if (invalidRate) {
+                      setInvalidRate(false)
+                      clearError()
+                    }
                   }}
                   required
+                  {...(invalidRate
+                    ? {
+                        'aria-invalid': true,
+                        'aria-describedby': 'list-error',
+                      }
+                    : {})}
                 />
               </label>
             )}
@@ -197,7 +222,7 @@ export function ListEditor({
           </div>
         </details>
         {error && (
-          <p className="error" role="alert">
+          <p id="list-error" className="error" role="alert">
             {error}
           </p>
         )}

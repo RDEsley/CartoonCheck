@@ -24,14 +24,17 @@ const link = z.string().max(2048).refine((value) => {
   }
 }, 'Only HTTP and HTTPS links are supported.').nullable()
 
+/** A canonical decimal string: positive, up to 8 places and at most 1000000. */
+export function isExchangeRate(value: string): boolean {
+  if (!/^(?:0|[1-9]\d{0,6})(?:\.\d{0,7}[1-9])?$/.test(value)) return false
+  const [, fraction = ''] = value.split('.')
+  const numerator = BigInt(value.replace('.', ''))
+  const denominator = 10n ** BigInt(fraction.length)
+  return numerator > 0n && numerator <= 1_000_000n * denominator
+}
+
 const exchangeRate = z.string()
-  .refine((value) => {
-    if (!/^(?:0|[1-9]\d{0,6})(?:\.\d{0,7}[1-9])?$/.test(value)) return false
-    const [, fraction = ''] = value.split('.')
-    const numerator = BigInt(value.replace('.', ''))
-    const denominator = 10n ** BigInt(fraction.length)
-    return numerator > 0n && numerator <= 1_000_000n * denominator
-  }, 'The exchange rate must be positive and at most 1000000.')
+  .refine(isExchangeRate, 'The exchange rate must be positive and at most 1000000.')
   .nullable()
 
 const recordFields = { id, createdAt: timestamp, updatedAt: timestamp, revision }
