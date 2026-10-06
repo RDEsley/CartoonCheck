@@ -7,6 +7,7 @@ import { Home } from '../features/lists/Home'
 import { ListScreen } from '../features/lists/ListScreen'
 import { FeedbackProvider } from './FeedbackProvider'
 import { HistoryScreen } from '../features/history/HistoryScreen'
+import { CelebrationProvider } from '../celebrations/CelebrationProvider'
 import { Wordmark, BrandArt } from '../components/BrandArt'
 import styles from './layout.module.css'
 
@@ -16,45 +17,47 @@ export function App() {
       <RuntimeProvider>
         <BrowserRouter>
           <FeedbackProvider>
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <main className={styles.onboarding}>
-                    <Wordmark />
-                    <h1>
-                      Adicione.
-                      <br />
-                      Marque.
-                      <br />
-                      Comemore.
-                    </h1>
-                    <BrandArt size={140} />
-                    <p>
-                      Suas compras, com um pequeno toque de desenho animado.
-                    </p>
-                    <Link to="/app">Abrir Cartoon Check →</Link>
-                  </main>
-                }
-              />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/app" element={<AppShell />}>
-                <Route index element={<Home />} />
-                <Route path="archived" element={<Home archived />} />
-                <Route path="lists/:listId" element={<ListScreen />} />
-                <Route path="history" element={<HistoryScreen />} />
-              </Route>
-              <Route
-                path="*"
-                element={
-                  <main className={styles.onboarding}>
-                    <Wordmark />
-                    <h1>Este caminho ainda não está pronto.</h1>
-                    <Link to="/app">Voltar para suas listas</Link>
-                  </main>
-                }
-              />
-            </Routes>
+            <CelebrationProvider>
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <main className={styles.onboarding}>
+                      <Wordmark />
+                      <h1>
+                        Adicione.
+                        <br />
+                        Marque.
+                        <br />
+                        Comemore.
+                      </h1>
+                      <BrandArt size={140} />
+                      <p>
+                        Suas compras, com um pequeno toque de desenho animado.
+                      </p>
+                      <Link to="/app">Abrir Cartoon Check →</Link>
+                    </main>
+                  }
+                />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/app" element={<AppShell />}>
+                  <Route index element={<Home />} />
+                  <Route path="archived" element={<Home archived />} />
+                  <Route path="lists/:listId" element={<ListScreen />} />
+                  <Route path="history" element={<HistoryScreen />} />
+                </Route>
+                <Route
+                  path="*"
+                  element={
+                    <main className={styles.onboarding}>
+                      <Wordmark />
+                      <h1>Este caminho ainda não está pronto.</h1>
+                      <Link to="/app">Voltar para suas listas</Link>
+                    </main>
+                  }
+                />
+              </Routes>
+            </CelebrationProvider>
           </FeedbackProvider>
         </BrowserRouter>
       </RuntimeProvider>

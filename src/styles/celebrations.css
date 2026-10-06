@@ -1,0 +1,76 @@
+.celebration-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  pointer-events: none;
+  z-index: var(--z-celebration);
+}
+.purchase-ghost {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  border-radius: 16px 18px 14px 17px;
+  box-shadow: 2px 3px 0 var(--ink);
+  pointer-events: none;
+  z-index: 30;
+  font-size: 18px;
+  font-weight: 800;
+  overflow: hidden;
+}
+.purchase-ghost svg {
+  width: 40px;
+  height: 40px;
+  animation: check-squash 180ms ease-out;
+}
+.purchase-ghost span {
+  overflow-wrap: anywhere;
+  position: relative;
+}
+.purchase-ghost span::after {
+  position: absolute;
+  content: '';
+  height: 2px;
+  background: var(--success);
+  width: 100%;
+  left: 0;
+  top: 50%;
+  transform-origin: left;
+  animation: strike 220ms ease-out;
+}
+.ghost-check {
+  stroke-dasharray: 1;
+  animation: draw-check 150ms ease-out;
+}
+@keyframes draw-check {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes check-squash {
+  0% {
+    transform: scale(1.06, 0.87);
+  }
+  65% {
+    transform: scale(0.97, 1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes strike {
+  0%,
+  35% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}

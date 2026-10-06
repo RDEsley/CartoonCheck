@@ -1,0 +1,27 @@
+import { expect, test } from '@playwright/test'
+for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+  test(`purchase feedback cleans up with reduced motion ${reducedMotion}`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion })
+    await page.goto('/app')
+    await page.getByLabel('Seu nome').fill('Richard')
+    await page.getByRole('button', { name: 'Vamos começar' }).click()
+    await page.getByRole('button', { name: 'Nova lista' }).click()
+    await page.getByLabel('Nome da lista').fill('Japão')
+    await page.getByRole('button', { name: 'Criar lista', exact: true }).click()
+    await page.getByRole('button', { name: 'Adicionar', exact: true }).click()
+    await page.getByLabel('Nome do item').fill('Switch')
+    await page.getByLabel('Nome do item').press('Enter')
+    await expect(page.getByLabel('Nome do item')).toHaveValue('')
+    await page.getByRole('button', { name: 'Fechar', exact: true }).click()
+    await page.getByRole('button', { name: 'Dispensar aviso' }).click()
+    await page.getByRole('checkbox', { name: 'Comprar Switch', exact: true }).click()
+    if (reducedMotion === 'reduce') {
+      await expect(page.locator('.purchase-ghost, .celebration-canvas')).toHaveCount(0)
+    }
+    await expect(page.getByRole('status').filter({ hasText: 'Lista completa!' }).first()).toBeVisible()
+    await expect(page.locator('.purchase-ghost, .celebration-canvas')).toHaveCount(0, { timeout: 3000 })
+    await page.reload()
+    await expect(page.getByRole('tab', { name: 'Comprei' })).toBeVisible()
+    await expect(page.locator('.purchase-ghost, .celebration-canvas')).toHaveCount(0)
+  })
+}

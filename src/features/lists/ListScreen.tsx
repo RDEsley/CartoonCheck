@@ -21,6 +21,8 @@ import { ListEditor } from './ListEditor'
 import type { ShoppingList } from '../../db/models'
 import styles from '../../app/layout.module.css'
 import { ItemsPanel } from '../items/ItemsPanel'
+import { motion } from 'motion/react'
+import { springs } from '../../animations/tokens'
 
 export function ListScreen() {
   const { listId = '' } = useParams()
@@ -65,7 +67,16 @@ export function ListScreen() {
             {list.emoji} {list.name}
           </h1>
           <p className="muted">
-            {pendingCount} para comprar · {purchasedCount} comprados
+            {pendingCount} para comprar ·{' '}
+            <motion.span
+              key={purchasedCount}
+              style={{ display: 'inline-block' }}
+              initial={{ scale: 0.92 }}
+              animate={{ scale: 1 }}
+              transition={springs.bouncy}
+            >
+              {purchasedCount} comprados
+            </motion.span>
           </p>
         </div>
         <CartoonButton

@@ -1,4 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks'
+import { useRef } from 'react'
+import { motion } from 'motion/react'
+import { duration } from '../../animations/tokens'
+import { useCelebrations } from '../../celebrations/context'
 import { useRuntime } from '../../app/context'
 import { CartoonCheckbox } from '../../components/CartoonCheckbox'
 import { useTask } from '../../hooks/useTask'
@@ -19,20 +23,31 @@ export function ShoppingItemCard({
 }) {
   const { db, context } = useRuntime()
   const { show } = useFeedback()
+  const { purchase } = useCelebrations()
+  const card = useRef<HTMLLIElement>(null)
   const item = useLiveQuery(() => db.items.get(id), [db, id])
   const { pending, error, run } = useTask()
   if (!item) return null
   const purchased = item.status === 'purchased'
   return (
-    <li className={styles.item} data-purchased={purchased}>
+    <motion.li
+      ref={card}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: duration.normal }}
+      className={styles.item}
+      data-purchased={purchased}
+    >
       <CartoonCheckbox
         checked={purchased}
         label={`${purchased ? 'Desmarcar' : 'Comprar'} ${item.name}`}
         disabled={archived || pending}
         onChange={() => {
+          const rect = card.current?.getBoundingClientRect()
           void run(
             () => setPurchased(db, context, id, !purchased),
             (result) => {
+              if (rect) purchase(result, rect)
               if (result.changed)
                 show(purchased ? 'Compra desfeita.' : 'Comprado! ✨', {
                   kind: 'purchase',
@@ -77,6 +92,6 @@ export function ShoppingItemCard({
           {error}
         </p>
       )}
-    </li>
+    </motion.li>
   )
 }

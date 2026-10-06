@@ -8,6 +8,7 @@ import { undoItemAction } from '../features/items/undo'
 import type { UndoAction } from '../features/items/undo'
 import { CartoonButton } from '../components/CartoonButton'
 import styles from './feedback.module.css'
+import { celebrations } from '../celebrations/engine'
 export function FeedbackProvider({ children }: { children: ReactNode }) {
   const { db, context } = useRuntime()
   const [toast, setToast] = useState<{
@@ -47,6 +48,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
                     void run(
                       () => undoItemAction(db, context, action),
                       () => {
+                        celebrations.cancel()
                         setToast((current) =>
                           current === toast
                             ? { message: 'Desfeito. Tudo no lugar!' }

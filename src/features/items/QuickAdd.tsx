@@ -6,6 +6,7 @@ import { CartoonButton } from '../../components/CartoonButton'
 import { useTask } from '../../hooks/useTask'
 import { addItem } from './commands'
 import { useFeedback } from '../../app/feedback-context'
+import { useCelebrations } from '../../celebrations/context'
 export function QuickAdd({
   listId,
   close,
@@ -17,6 +18,7 @@ export function QuickAdd({
 }) {
   const { db, context } = useRuntime()
   const { show } = useFeedback()
+  const { cancel } = useCelebrations()
   const [name, setName] = useState('')
   const input = useRef<HTMLInputElement>(null)
   const { pending, error, run } = useTask()
@@ -39,6 +41,7 @@ export function QuickAdd({
             () => addItem(db, context, listId, { name }),
             (item) => {
               setName('')
+              cancel()
               setNotice(`${item.name} adicionado!`)
               show('Item adicionado!', { kind: 'add', item })
               added()
