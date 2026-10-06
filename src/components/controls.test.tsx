@@ -3,6 +3,18 @@ import userEvent from '@testing-library/user-event'
 import { expect, it, vi } from 'vitest'
 import { CartoonCheckbox } from './CartoonCheckbox'
 import { BottomSheet } from './BottomSheet'
+import { ProgressMeter } from './ProgressMeter'
+it('reports list progress as a percentage and keeps an empty list at zero', () => {
+  const { rerender } = render(<ProgressMeter value={50} />)
+  const meter = screen.getByRole('progressbar', { name: 'Progresso da lista' })
+  expect(meter).toHaveAttribute('aria-valuenow', '50')
+  expect(meter).toHaveAttribute('aria-valuetext', '50% comprado')
+  expect(meter.firstElementChild).toHaveStyle({ transform: 'scaleX(0.5)' })
+  rerender(<ProgressMeter value={null} />)
+  expect(meter).toHaveAttribute('aria-valuenow', '0')
+  expect(meter).toHaveAttribute('aria-valuetext', 'Lista vazia')
+  expect(meter.firstElementChild).toHaveStyle({ transform: 'scaleX(0)' })
+})
 it('exposes purchase state and supports keyboard activation', async () => {
   const onChange = vi.fn()
   const user = userEvent.setup()
