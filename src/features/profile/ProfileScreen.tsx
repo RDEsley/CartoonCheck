@@ -9,6 +9,7 @@ import { BlobImage, StoredImage } from '../../components/StoredImage'
 import { CartoonButton } from '../../components/CartoonButton'
 import { useTask } from '../../hooks/useTask'
 import { compressImage } from '../items/images'
+import { errorMessage } from '../../lib/error-message'
 import { updateProfile } from './commands'
 import styles from '../../app/layout.module.css'
 import { useFormDraft } from '../../hooks/useFormDraft'
@@ -155,10 +156,11 @@ function ProfileForm({ profile }: { profile: Profile }) {
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp"
-              disabled={pending || processing}
               onChange={(event) => {
                 const file = event.target.files?.[0]
-                if (!file) return
+                // Clearing the field lets the same photo be chosen again later.
+                event.target.value = ''
+                if (!file || processing || pending) return
                 setProcessing(true)
                 setPhotoError('')
                 void compressImage(file, true)
@@ -167,8 +169,8 @@ function ProfileForm({ profile }: { profile: Profile }) {
                       await checkpointPhoto(scope, asset)
                       setPhoto(asset)
                     },
-                    () => {
-                      setPhotoError('Escolha JPEG, PNG ou WebP de até 15 MB.')
+                    (reason: unknown) => {
+                      setPhotoError(errorMessage(reason))
                     },
                   )
                   .finally(() => {

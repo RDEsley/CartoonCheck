@@ -1,6 +1,25 @@
 import { ZodError } from 'zod'
 import { DataError } from '../db/errors'
+import { InputError } from './input-error'
+import type { InputProblem } from './input-error'
+const inputMessages: Record<InputProblem, string> = {
+  'image-format': 'Esta foto não é JPEG, PNG ou WebP. Escolha outro arquivo.',
+  'image-size': 'Esta foto passa de 15 MB. Escolha um arquivo menor.',
+  'image-pixels': 'Esta foto passa de 40 megapixels. Escolha uma imagem menor.',
+  'image-decode': 'Não conseguimos abrir esta foto. Tente outro arquivo.',
+  'image-fit':
+    'Não foi possível reduzir esta foto o bastante. Tente outra imagem.',
+}
+// Dexie reports a full disk as the cause of an aborted transaction.
+function isQuotaError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  if (/quota/i.test(error.name)) return true
+  return 'inner' in error && error.inner !== error && isQuotaError(error.inner)
+}
 export function errorMessage(error: unknown): string {
+  if (error instanceof InputError) return inputMessages[error.problem]
+  if (isQuotaError(error))
+    return 'O armazenamento está cheio. Exporte um backup e libere espaço antes de tentar de novo.'
   if (error instanceof DataError) {
     if (error.code === 'CONFLICT')
       return 'Os dados mudaram. Feche e abra este formulário para tentar de novo.'
@@ -16,7 +35,5 @@ export function errorMessage(error: unknown): string {
   }
   if (error instanceof ZodError)
     return 'Revise os campos. Há um valor inválido ou fora do limite.'
-  if (error instanceof Error && /quota/i.test(error.name))
-    return 'O armazenamento está cheio. Exporte um backup e libere espaço antes de tentar de novo.'
   return 'Não foi possível concluir. Tente novamente; seus dados anteriores foram preservados.'
 }

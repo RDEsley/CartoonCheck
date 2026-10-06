@@ -30,6 +30,13 @@ test('saves compressed photos, total item prices and manual currency conversion'
     return canvas.toDataURL('image/png').split(',')[1] ?? ''
   })
   await page.getByLabel('Foto opcional').setInputFiles({ name: 'camera.png', mimeType: 'image/png', buffer: Buffer.from(data, 'base64') })
+  await expect(page.locator('[role="dialog"] img')).toBeVisible()
+  await page.getByLabel('Foto opcional').setInputFiles({ name: 'notes.png', mimeType: 'image/png', buffer: Buffer.from('this is not an image') })
+  await expect(page.getByRole('alert')).toHaveText('Esta foto não é JPEG, PNG ou WebP. Escolha outro arquivo.')
+  await expect(page.locator('[role="dialog"] img')).toBeVisible()
+  const huge = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, 0, 0, 0x27, 0x10, 0, 0, 0x27, 0x10, 8, 6, 0, 0, 0]), Buffer.alloc(64)])
+  await page.getByLabel('Foto opcional').setInputFiles({ name: 'huge.png', mimeType: 'image/png', buffer: huge })
+  await expect(page.getByRole('alert')).toHaveText('Esta foto passa de 40 megapixels. Escolha uma imagem menor.')
   await expect(page.getByRole('button', { name: 'Salvar item' })).toBeEnabled()
   await page.getByRole('button', { name: 'Salvar item', exact: true }).click()
   await expect(page.getByText(/Planejado:.*10.000/)).toBeVisible()
@@ -39,4 +46,29 @@ test('saves compressed photos, total item prices and manual currency conversion'
   await expect(page.getByText(/Pago ≈.*315,00/)).toBeVisible()
   await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
   await expect(page.locator('[data-item-list] img')).toBeVisible()
+})
+test('reads the size of images encoded by the browser without decoding them', async ({ page }) => {
+  await page.goto('/app')
+  const sizes = await page.evaluate(async () => {
+    const path = '/src/features/items/image-header.ts'
+    const module = (await import(path)) as typeof import('../../src/features/items/image-header')
+    const canvas = document.createElement('canvas')
+    canvas.width = 321
+    canvas.height = 123
+    canvas.getContext('2d')?.fillRect(0, 0, 100, 100)
+    const read = (type: string) =>
+      new Promise<unknown>((resolve) => {
+        canvas.toBlob((blob) => {
+          void blob?.arrayBuffer().then((buffer) => {
+            resolve(module.readImageHeader(new Uint8Array(buffer)))
+          })
+        }, type, 0.8)
+      })
+    return [await read('image/png'), await read('image/jpeg'), await read('image/webp')]
+  })
+  expect(sizes).toEqual([
+    { mime: 'image/png', width: 321, height: 123 },
+    { mime: 'image/jpeg', width: 321, height: 123 },
+    { mime: 'image/webp', width: 321, height: 123 },
+  ])
 })

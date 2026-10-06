@@ -9,6 +9,7 @@ import { useTask } from '../../hooks/useTask'
 import { deleteItem, updateItem } from './commands'
 import { useFeedback } from '../../app/feedback-context'
 import { compressImage } from './images'
+import { errorMessage } from '../../lib/error-message'
 import { editPrice, parsePrice } from '../../lib/money'
 import { BlobImage, StoredImage } from '../../components/StoredImage'
 import { celebrations } from '../../celebrations/engine'
@@ -160,10 +161,11 @@ export function ItemEditor({
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp"
-              disabled={processing || pending}
               onChange={(event) => {
                 const file = event.target.files?.[0]
-                if (!file) return
+                // Clearing the field lets the same photo be chosen again later.
+                event.target.value = ''
+                if (!file || processing || pending) return
                 setProcessing(true)
                 setPhotoError('')
                 void compressImage(file)
@@ -172,10 +174,8 @@ export function ItemEditor({
                       await checkpointPhoto(scope, asset)
                       setPhoto(asset)
                     },
-                    () => {
-                      setPhotoError(
-                        'Escolha uma foto JPEG, PNG ou WebP de até 15 MB e 40 megapixels.',
-                      )
+                    (reason: unknown) => {
+                      setPhotoError(errorMessage(reason))
                     },
                   )
                   .finally(() => {
