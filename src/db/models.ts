@@ -5,7 +5,7 @@ export const themes = ['comic-pop', 'sakura', 'night-cartoon'] as const
 export const avatarPresets = ['bag', 'star', 'gift', 'leaf', 'planet'] as const
 
 const id = z.uuid()
-const timestamp = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)
+const timestamp = z.number().int().nonnegative().max(8_640_000_000_000_000)
 const revision = z.number().int().positive().max(Number.MAX_SAFE_INTEGER)
 const name = z.string().min(1).max(120).refine((value) => value === value.trim())
 const inputName = z.string().trim().min(1).max(120)

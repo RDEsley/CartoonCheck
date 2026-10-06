@@ -62,6 +62,7 @@ function ReadyRuntime({
   children: ReactNode
 }) {
   const profiles = useLiveQuery(() => database.profile.toArray(), [])
+  const meta = useLiveQuery(() => database.meta.get('app'), [])
   const profile = profiles?.[0] ?? null
   useEffect(() => {
     document.documentElement.dataset.theme = profile?.themeId ?? 'comic-pop'
@@ -73,6 +74,20 @@ function ReadyRuntime({
     return (
       <main className="recovery" role="status">
         Abrindo seu perfil…
+      </main>
+    )
+  if (meta && meta.datasetEpoch !== context.datasetEpoch)
+    return (
+      <main className="recovery">
+        <h1>Um backup foi restaurado.</h1>
+        <p>Reabra o aplicativo para continuar com os dados restaurados.</p>
+        <CartoonButton
+          onClick={() => {
+            location.reload()
+          }}
+        >
+          Reabrir
+        </CartoonButton>
       </main>
     )
   return (

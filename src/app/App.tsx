@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router'
+import { lazy, Suspense } from 'react'
 import { RuntimeProvider } from './RuntimeProvider'
 import { ErrorBoundary } from './ErrorBoundary'
 import { AppShell } from './AppShell'
@@ -12,6 +13,10 @@ import { SettingsScreen } from '../features/settings/SettingsScreen'
 import { ProfileScreen } from '../features/profile/ProfileScreen'
 import { Wordmark, BrandArt } from '../components/BrandArt'
 import styles from './layout.module.css'
+const BackupScreen = lazy(async () => {
+  const module = await import('../features/backup/BackupScreen')
+  return { default: module.BackupScreen }
+})
 
 export function App() {
   return (
@@ -42,6 +47,16 @@ export function App() {
                   }
                 />
                 <Route path="/onboarding" element={<Onboarding />} />
+                <Route
+                  path="/restore"
+                  element={
+                    <main className={styles.onboarding}>
+                      <Suspense fallback={<p role="status">Abrindo backup…</p>}>
+                        <BackupScreen />
+                      </Suspense>
+                    </main>
+                  }
+                />
                 <Route path="/app" element={<AppShell />}>
                   <Route index element={<Home />} />
                   <Route path="archived" element={<Home archived />} />
@@ -49,6 +64,14 @@ export function App() {
                   <Route path="history" element={<HistoryScreen />} />
                   <Route path="settings" element={<SettingsScreen />} />
                   <Route path="settings/profile" element={<ProfileScreen />} />
+                  <Route
+                    path="settings/backup"
+                    element={
+                      <Suspense fallback={<p role="status">Abrindo backup…</p>}>
+                        <BackupScreen />
+                      </Suspense>
+                    }
+                  />
                 </Route>
                 <Route
                   path="*"
