@@ -48,3 +48,5 @@ jobs:
 
       - name: Browser integration tests
         run: npm run test:e2e
+      - name: Production offline tests
+        run: npm run test:pwa

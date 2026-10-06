@@ -21,6 +21,10 @@ export default defineConfig([
     },
   },
   {
+    files: ['scripts/generate-icons.mjs'],
+    languageOptions: { globals: globals.browser },
+  },
+  {
     files: ['**/*.{ts,tsx}'],
     extends: [
       js.configs.recommended,
@@ -36,10 +40,7 @@ export default defineConfig([
   },
   {
     files: ['src/**/*.{ts,tsx}'],
-    extends: [
-      reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
-    ],
+    extends: [reactHooks.configs.flat.recommended, reactRefresh.configs.vite],
     languageOptions: {
       globals: globals.browser,
     },

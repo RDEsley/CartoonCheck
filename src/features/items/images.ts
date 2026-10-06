@@ -1,6 +1,7 @@
 import { createId } from '../../lib/create-id'
 import { imageAssetSchema } from '../../db/models'
 import type { ImageAsset } from '../../db/models'
+import { beginOperation } from '../../pwa/operations'
 
 export async function compressImage(
   file: File,
@@ -11,8 +12,10 @@ export async function compressImage(
     file.size > 15 * 1024 * 1024
   )
     throw new Error('Choose JPEG, PNG or WebP up to 15 MB.')
-  const bitmap = await createImageBitmap(file)
+  const finish = beginOperation()
+  let bitmap: ImageBitmap | undefined
   try {
+    bitmap = await createImageBitmap(file)
     if (
       !bitmap.width ||
       !bitmap.height ||
@@ -49,7 +52,8 @@ export async function compressImage(
     }
     throw new Error('Image could not fit the storage limit.')
   } finally {
-    bitmap.close()
+    bitmap?.close()
+    finish()
   }
 }
 function canvasBlob(canvas: HTMLCanvasElement, mime: string): Promise<Blob> {

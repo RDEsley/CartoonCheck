@@ -45,7 +45,7 @@ export class CartoonCheckDatabase extends Dexie {
     return this.currentState
   }
 
-  async initialize(): Promise<void> {
+  async initialize(allowSchemaChange = true): Promise<void> {
     if (this.state === 'outdated') {
       throw new DataError('DATABASE_UNAVAILABLE', 'Reload before opening an outdated connection.')
     }
@@ -53,7 +53,8 @@ export class CartoonCheckDatabase extends Dexie {
 
     this.setState('opening')
     try {
-      await this.assertSupportedVersion()
+      const existingVersion = await this.assertSupportedVersion()
+      if (!allowSchemaChange && existingVersion !== DATABASE_VERSION) throw new DataError('DATABASE_UNAVAILABLE', 'Close other sessions before creating or upgrading the database.')
       await this.open()
       // Dexie maps decimal schema versions to native versions multiplied by ten.
       if (this.backendDB().version / 10 > DATABASE_VERSION) {
@@ -62,7 +63,7 @@ export class CartoonCheckDatabase extends Dexie {
       this.setState('ready')
     } catch (error) {
       this.close()
-      this.setState(error instanceof Dexie.VersionError ? 'outdated' : 'error')
+      this.setState(error instanceof Dexie.VersionError ? 'outdated' : error instanceof DataError ? 'blocked' : 'error')
       throw error
     }
   }
@@ -77,15 +78,17 @@ export class CartoonCheckDatabase extends Dexie {
     this.onStateChange?.(state)
   }
 
-  private async assertSupportedVersion(): Promise<void> {
+  private async assertSupportedVersion(): Promise<number | null> {
     const probe = new Dexie(this.name, { autoOpen: false })
     try {
       await probe.open()
       if (probe.verno > DATABASE_VERSION) {
         throw new Dexie.VersionError('This database requires a newer application version.')
       }
+      return probe.verno
     } catch (error) {
       if (!(error instanceof Dexie.NoSuchDatabaseError)) throw error
+      return null
     } finally {
       probe.close()
     }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { useRuntime } from '../../app/context'
 import type { ImageAsset, ShoppingItem, ShoppingList } from '../../db/models'
+import { currencies } from '../../db/models'
 import { BottomSheet } from '../../components/BottomSheet'
 import { CartoonButton } from '../../components/CartoonButton'
 import { useTask } from '../../hooks/useTask'
@@ -11,9 +12,16 @@ import { compressImage } from './images'
 import { editPrice, parsePrice } from '../../lib/money'
 import { BlobImage, StoredImage } from '../../components/StoredImage'
 import { celebrations } from '../../celebrations/engine'
+import { useFormDraft } from '../../hooks/useFormDraft'
+import {
+  checkpointPhoto,
+  discardDraft,
+  initialDraftField,
+  initialDraftPhoto,
+} from '../../pwa/drafts'
 export function ItemEditor({
-  item,
-  list,
+  item: sourceItem,
+  list: sourceList,
   close,
   changed,
 }: {
@@ -22,28 +30,80 @@ export function ItemEditor({
   close: () => void
   changed: (notice: string) => void
 }) {
+  const [item] = useState(sourceItem)
+  const [list] = useState(sourceList)
   const { db, context } = useRuntime()
   const { show } = useFeedback()
-  const [name, setName] = useState(item.name)
-  const [quantity, setQuantity] = useState(String(item.quantity))
-  const [planned, setPlanned] = useState(
-    editPrice(item.plannedPriceMinor, list.currency),
+  const scope = `item:${item.id}`
+  const initial = (field: string, fallback: string) =>
+    initialDraftField(
+      scope,
+      context.datasetEpoch,
+      item.revision,
+      field,
+      fallback,
+    )
+  const [name, setName] = useState(() => initial('name', item.name))
+  const [quantity, setQuantity] = useState(() =>
+    initial('quantity', String(item.quantity)),
   )
-  const [paid, setPaid] = useState(
-    editPrice(item.paidPriceMinor, list.currency),
+  const [currency] = useState(
+    () =>
+      currencies.find(
+        (value) => value === initial('currency', list.currency),
+      ) ?? list.currency,
   )
-  const [note, setNote] = useState(item.note ?? '')
-  const [store, setStore] = useState(item.store ?? '')
-  const [link, setLink] = useState(item.link ?? '')
-  const [photo, setPhoto] = useState<ImageAsset | null | undefined>(undefined)
+  const [planned, setPlanned] = useState(() =>
+    initial('planned', editPrice(item.plannedPriceMinor, currency)),
+  )
+  const [paid, setPaid] = useState(() =>
+    initial('paid', editPrice(item.paidPriceMinor, currency)),
+  )
+  const [note, setNote] = useState(() => initial('note', item.note ?? ''))
+  const [store, setStore] = useState(() => initial('store', item.store ?? ''))
+  const [link, setLink] = useState(() => initial('link', item.link ?? ''))
+  const [photo, setPhoto] = useState<ImageAsset | null | undefined>(() =>
+    initialDraftPhoto(scope, context.datasetEpoch, item.revision),
+  )
   const [photoError, setPhotoError] = useState('')
   const [processing, setProcessing] = useState(false)
   const { pending, error, run } = useTask()
+  const draftConflict = useFormDraft(
+    scope,
+    item.revision,
+    `/app/lists/${list.id}?itemEdit=${item.id}`,
+    {
+      name,
+      quantity,
+      planned,
+      paid,
+      note,
+      store,
+      link,
+      photo:
+        photo === undefined ? 'keep' : photo === null ? 'remove' : 'replace',
+      currency,
+    },
+    {
+      name: item.name,
+      quantity: String(item.quantity),
+      planned: editPrice(item.plannedPriceMinor, list.currency),
+      paid: editPrice(item.paidPriceMinor, list.currency),
+      note: item.note ?? '',
+      store: item.store ?? '',
+      link: item.link ?? '',
+      photo: 'keep',
+      currency: list.currency,
+    },
+  )
   return (
     <BottomSheet
       open
       onOpenChange={(open) => {
-        if (!open && !pending) close()
+        if (!open && !pending && !processing) {
+          discardDraft(scope)
+          close()
+        }
       }}
       title="Detalhes do item"
       description="Deixe do seu jeito."
@@ -61,9 +121,9 @@ export function ItemEditor({
                 {
                   name,
                   quantity: Number(quantity),
-                  plannedPriceMinor: parsePrice(planned, list.currency),
-                  paidPriceMinor: parsePrice(paid, list.currency),
-                  expectedCurrency: list.currency,
+                  plannedPriceMinor: parsePrice(planned, currency),
+                  paidPriceMinor: parsePrice(paid, currency),
+                  expectedCurrency: currency,
                   note: note || null,
                   store: store.trim() || null,
                   link: link.trim() || null,
@@ -72,6 +132,7 @@ export function ItemEditor({
                 photo,
               ),
             () => {
+              discardDraft(scope)
               close()
               changed('Item atualizado!')
             },
@@ -107,11 +168,17 @@ export function ItemEditor({
                 setProcessing(true)
                 setPhotoError('')
                 void compressImage(file)
-                  .then(setPhoto, () => {
-                    setPhotoError(
-                      'Escolha uma foto JPEG, PNG ou WebP de até 15 MB e 40 megapixels.',
-                    )
-                  })
+                  .then(
+                    async (asset) => {
+                      await checkpointPhoto(scope, asset)
+                      setPhoto(asset)
+                    },
+                    () => {
+                      setPhotoError(
+                        'Escolha uma foto JPEG, PNG ou WebP de até 15 MB e 40 megapixels.',
+                      )
+                    },
+                  )
                   .finally(() => {
                     setProcessing(false)
                   })
@@ -119,7 +186,8 @@ export function ItemEditor({
             />
           </label>
         </div>
-        {(photo !== undefined && photo !== null || photo === undefined && item.photoId !== null) && (
+        {((photo !== undefined && photo !== null) ||
+          (photo === undefined && item.photoId !== null)) && (
           <CartoonButton
             variant="quiet"
             onClick={() => {
@@ -149,18 +217,18 @@ export function ItemEditor({
           />
         </label>
         <label>
-          Preço planejado ({list.currency})
+          Preço planejado ({currency})
           <input
             inputMode="decimal"
             value={planned}
             onChange={(event) => {
               setPlanned(event.target.value)
             }}
-            placeholder={list.currency === 'JPY' ? 'Ex.: 45000' : 'Ex.: 120,50'}
+            placeholder={currency === 'JPY' ? 'Ex.: 45000' : 'Ex.: 120,50'}
           />
         </label>
         <label>
-          Preço pago ({list.currency})
+          Preço pago ({currency})
           <input
             inputMode="decimal"
             value={paid}
@@ -208,7 +276,7 @@ export function ItemEditor({
         </label>
         <CartoonButton
           type="submit"
-          disabled={pending || processing || !name.trim()}
+          disabled={pending || processing || draftConflict || !name.trim()}
         >
           Salvar item
         </CartoonButton>
@@ -219,6 +287,7 @@ export function ItemEditor({
             void run(
               () => deleteItem(db, context, item.id),
               (snapshot) => {
+                discardDraft(scope)
                 celebrations.cancel()
                 close()
                 changed('Item removido.')
@@ -233,6 +302,12 @@ export function ItemEditor({
         {error && (
           <p className="error" role="alert">
             {error}
+          </p>
+        )}
+        {draftConflict && (
+          <p className="error" role="alert">
+            Os dados mudaram desde o rascunho. Guarde uma cópia do rascunho,
+            feche esta edição e abra o item de novo.
           </p>
         )}
       </form>

@@ -22,6 +22,16 @@ afterEach(async () => {
 })
 
 describe('IndexedDB foundation', () => {
+  it('requires permission to create a schema while sharing an existing session', async () => {
+    const db = database()
+    await expect(db.initialize(false)).rejects.toMatchObject({ code: 'DATABASE_UNAVAILABLE' })
+    expect(db.state).toBe('blocked')
+    expect(await Dexie.exists(db.name)).toBe(false)
+    await db.initialize()
+    db.close()
+    await db.initialize(false)
+    expect(db.state).toBe('ready')
+  })
   it('creates the six stores and one stable dataset identity', async () => {
     const db = database()
     expect(db.state).toBe('closed')

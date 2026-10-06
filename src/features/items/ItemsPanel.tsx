@@ -10,11 +10,19 @@ import { ShoppingItemCard } from './ShoppingItemCard'
 import { QuickAdd } from './QuickAdd'
 import { ItemEditor } from './ItemEditor'
 import styles from './items.module.css'
+import { useSearchParams } from 'react-router'
 export function ItemsPanel({ list }: { list: ShoppingList }) {
   const { db } = useRuntime()
+  const [search, setSearch] = useSearchParams()
+  const requestedId = search.get('itemEdit')
+  const requestedItem = useLiveQuery(
+    () => (requestedId ? db.items.get(requestedId) : undefined),
+    [db, requestedId],
+  )
   const [tab, setTab] = useState<ShoppingItem['status']>('pending')
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState<ShoppingItem | null>(null)
+  const editedItem = editing ?? requestedItem ?? null
   const [notice, setNotice] = useState('')
   const tabs = useRef<HTMLDivElement>(null)
   const ids = useLiveQuery(
@@ -114,23 +122,27 @@ export function ItemsPanel({ list }: { list: ShoppingList }) {
           Adicionar
         </CartoonButton>
       )}
-      {adding && (
+      {(adding || search.has('add')) && (
         <QuickAdd
           listId={list.id}
           close={() => {
             setAdding(false)
+            search.delete('add')
+            setSearch(search, { replace: true })
           }}
           added={() => {
             setTab('pending')
           }}
         />
       )}
-      {editing && (
+      {editedItem && (
         <ItemEditor
-          item={editing}
+          item={editedItem}
           list={list}
           close={() => {
             setEditing(null)
+            search.delete('itemEdit')
+            setSearch(search, { replace: true })
           }}
           changed={setNotice}
         />

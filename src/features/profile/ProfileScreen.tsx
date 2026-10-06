@@ -11,6 +11,13 @@ import { useTask } from '../../hooks/useTask'
 import { compressImage } from '../items/images'
 import { updateProfile } from './commands'
 import styles from '../../app/layout.module.css'
+import { useFormDraft } from '../../hooks/useFormDraft'
+import {
+  checkpointPhoto,
+  discardDraft,
+  initialDraftField,
+  initialDraftPhoto,
+} from '../../pwa/drafts'
 export function ProfileScreen() {
   const { profile } = useRuntime()
   return profile ? <ProfileForm profile={profile} /> : null
@@ -19,14 +26,44 @@ function ProfileForm({ profile }: { profile: Profile }) {
   const { db, context } = useRuntime()
   const { show } = useFeedback()
   const [snapshot, setSnapshot] = useState(profile)
-  const [name, setName] = useState(profile.name)
+  const scope = `profile:${profile.id}`
+  const initial = (field: string, fallback: string) =>
+    initialDraftField(
+      scope,
+      context.datasetEpoch,
+      profile.revision,
+      field,
+      fallback,
+    )
+  const [name, setName] = useState(() => initial('name', profile.name))
   const [avatar, setAvatar] = useState<NonNullable<Profile['avatarPresetId']>>(
-    profile.avatarPresetId ?? 'bag',
+    () =>
+      avatarPresets.find(
+        (value) => value === initial('avatar', profile.avatarPresetId ?? 'bag'),
+      ) ?? 'bag',
   )
-  const [photo, setPhoto] = useState<ImageAsset | null | undefined>(undefined)
+  const [photo, setPhoto] = useState<ImageAsset | null | undefined>(() =>
+    initialDraftPhoto(scope, context.datasetEpoch, profile.revision),
+  )
   const [processing, setProcessing] = useState(false)
   const [photoError, setPhotoError] = useState('')
   const { pending, error, run } = useTask()
+  useFormDraft(
+    scope,
+    snapshot.revision,
+    '/app/settings/profile',
+    {
+      name,
+      avatar,
+      photo:
+        photo === undefined ? 'keep' : photo === null ? 'remove' : 'replace',
+    },
+    {
+      name: snapshot.name,
+      avatar: snapshot.avatarPresetId ?? 'bag',
+      photo: 'keep',
+    },
+  )
   return (
     <>
       <div className={styles.heading}>
@@ -57,6 +94,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
                 photo ?? undefined,
               ),
             (updated) => {
+              discardDraft(scope)
               setSnapshot(updated)
               setPhoto(undefined)
               show('Perfil salvo!')
@@ -125,9 +163,15 @@ function ProfileForm({ profile }: { profile: Profile }) {
                 setProcessing(true)
                 setPhotoError('')
                 void compressImage(file, true)
-                  .then(setPhoto, () => {
-                    setPhotoError('Escolha JPEG, PNG ou WebP de até 15 MB.')
-                  })
+                  .then(
+                    async (asset) => {
+                      await checkpointPhoto(scope, asset)
+                      setPhoto(asset)
+                    },
+                    () => {
+                      setPhotoError('Escolha JPEG, PNG ou WebP de até 15 MB.')
+                    },
+                  )
                   .finally(() => {
                     setProcessing(false)
                   })

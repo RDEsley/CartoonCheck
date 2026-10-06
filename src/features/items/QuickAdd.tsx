@@ -7,6 +7,8 @@ import { useTask } from '../../hooks/useTask'
 import { addItem } from './commands'
 import { useFeedback } from '../../app/feedback-context'
 import { useCelebrations } from '../../celebrations/context'
+import { useFormDraft } from '../../hooks/useFormDraft'
+import { discardDraft, initialDraftField } from '../../pwa/drafts'
 export function QuickAdd({
   listId,
   close,
@@ -19,7 +21,11 @@ export function QuickAdd({
   const { db, context } = useRuntime()
   const { show } = useFeedback()
   const { cancel } = useCelebrations()
-  const [name, setName] = useState('')
+  const scope = `add:${listId}`
+  const [name, setName] = useState(() =>
+    initialDraftField(scope, context.datasetEpoch, 0, 'name', ''),
+  )
+  useFormDraft(scope, 0, `/app/lists/${listId}?add=1`, { name }, { name: '' })
   const input = useRef<HTMLInputElement>(null)
   const { pending, error, run } = useTask()
   const [notice, setNotice] = useState('')
@@ -27,7 +33,10 @@ export function QuickAdd({
     <BottomSheet
       open
       onOpenChange={(open) => {
-        if (!open && !pending) close()
+        if (!open && !pending) {
+          discardDraft(scope)
+          close()
+        }
       }}
       title="O que você quer adicionar?"
       description="Só o nome. Os detalhes ficam para depois."
@@ -41,6 +50,7 @@ export function QuickAdd({
             () => addItem(db, context, listId, { name }),
             (item) => {
               setName('')
+              discardDraft(scope)
               cancel()
               setNotice(`${item.name} adicionado!`)
               show('Item adicionado!', { kind: 'add', item })

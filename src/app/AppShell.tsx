@@ -4,6 +4,8 @@ import { useEffect } from 'react'
 import { useRuntime } from './context'
 import { Wordmark } from '../components/BrandArt'
 import styles from './layout.module.css'
+import { PwaStatus } from '../pwa/PwaStatus'
+import { DraftRecovery } from '../pwa/DraftRecovery'
 export function AppShell() {
   const { profile } = useRuntime()
   const location = useLocation()
@@ -24,6 +26,8 @@ export function AppShell() {
         <span className={styles.localBadge}>no seu dispositivo</span>
       </header>
       <main id="main-content" className={styles.main}>
+        <PwaStatus />
+        <DraftRecovery />
         <Outlet />
       </main>
       <nav aria-label="Navegação principal" className={styles.nav}>

@@ -7,10 +7,13 @@ import { database, initializeRuntime, subscribeDatabase } from './runtime'
 import { RuntimeContext } from './context'
 import { Wordmark } from '../components/BrandArt'
 import { CartoonButton } from '../components/CartoonButton'
+import { BottomSheet } from '../components/BottomSheet'
+import { downloadDraft, draftIsSafe } from '../pwa/drafts'
 
 export function RuntimeProvider({ children }: { children: ReactNode }) {
   const [context, setContext] = useState<CommandContext | null>(null)
   const [failed, setFailed] = useState(false)
+  const [exported, setExported] = useState(false)
   const state = useSyncExternalStore(subscribeDatabase, () => database.state)
   useEffect(() => {
     let active = true
@@ -26,7 +29,10 @@ export function RuntimeProvider({ children }: { children: ReactNode }) {
       active = false
     }
   }, [])
-  if (failed || state === 'outdated' || state === 'blocked')
+  if (
+    context === null &&
+    (failed || state === 'outdated' || state === 'blocked')
+  )
     return (
       <main className="recovery">
         <Wordmark />
@@ -52,7 +58,52 @@ export function RuntimeProvider({ children }: { children: ReactNode }) {
         <p>Abrindo suas listas…</p>
       </main>
     )
-  return <ReadyRuntime context={context}>{children}</ReadyRuntime>
+  return (
+    <>
+      <div inert={state !== 'ready'}>
+        <ReadyRuntime context={context}>{children}</ReadyRuntime>
+      </div>
+      {state !== 'ready' && (
+        <BottomSheet
+          open
+          dismissible={false}
+          alert
+          onOpenChange={() => {
+            document.getElementById('reopen-app')?.focus()
+          }}
+          title="Precisamos reabrir o aplicativo."
+          description="Feche outras abas do Cartoon Check e reabra esta sessão. Seus dados salvos foram preservados."
+        >
+          <div className="stack">
+            {!draftIsSafe() && (
+              <p className="muted">
+                Guarde uma cópia do rascunho antes de reabrir.
+              </p>
+            )}
+            <CartoonButton
+              variant="quiet"
+              onClick={() => {
+                void downloadDraft().then(() => {
+                  setExported(true)
+                })
+              }}
+            >
+              Guardar rascunho
+            </CartoonButton>
+            <CartoonButton
+              id="reopen-app"
+              disabled={!draftIsSafe() && !exported}
+              onClick={() => {
+                location.reload()
+              }}
+            >
+              Reabrir aplicativo
+            </CartoonButton>
+          </div>
+        </BottomSheet>
+      )}
+    </>
+  )
 }
 function ReadyRuntime({
   context,

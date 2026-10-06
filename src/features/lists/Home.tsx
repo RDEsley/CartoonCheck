@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { Plus } from 'lucide-react'
 import { CartoonButton } from '../../components/CartoonButton'
 import { ListEditor } from './ListEditor'
@@ -14,6 +14,7 @@ import styles from '../../app/layout.module.css'
 export function Home({ archived = false }: { archived?: boolean }) {
   const [creating, setCreating] = useState(false)
   const navigate = useNavigate()
+  const [search, setSearch] = useSearchParams()
   const { db, profile } = useRuntime()
   const ids = useLiveQuery(
     () => getListIds(db, archived ? 'archived' : 'active'),
@@ -77,10 +78,12 @@ export function Home({ archived = false }: { archived?: boolean }) {
           Nova lista
         </CartoonButton>
       )}
-      {creating && (
+      {(creating || search.has('new')) && !archived && (
         <ListEditor
           close={() => {
             setCreating(false)
+            search.delete('new')
+            setSearch(search, { replace: true })
           }}
           onCreated={(id) => {
             void navigate(`/app/lists/${id}`)

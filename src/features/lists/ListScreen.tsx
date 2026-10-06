@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import {
   ArrowLeft,
   MoreHorizontal,
@@ -29,6 +29,7 @@ export function ListScreen() {
   const { listId = '' } = useParams()
   const { db, context } = useRuntime()
   const navigate = useNavigate()
+  const [search, setSearch] = useSearchParams()
   const summary = useLiveQuery(() => getListSummary(db, listId), [db, listId])
   const [menu, setMenu] = useState(false)
   const [editing, setEditing] = useState<ShoppingList | null>(null)
@@ -153,11 +154,13 @@ export function ListScreen() {
           </div>
         </BottomSheet>
       )}
-      {editing && (
+      {(editing ?? (search.has('listEdit') ? list : null)) && (
         <ListEditor
-          list={editing}
+          list={editing ?? list}
           close={() => {
             setEditing(null)
+            search.delete('listEdit')
+            setSearch(search, { replace: true })
           }}
         />
       )}

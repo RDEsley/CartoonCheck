@@ -7,9 +7,11 @@ import type { ShoppingList } from '../../db/models'
 import { useTask } from '../../hooks/useTask'
 import { createList, updateList } from './commands'
 import { canonicalRate } from '../../lib/money'
+import { useFormDraft } from '../../hooks/useFormDraft'
+import { discardDraft, initialDraftField } from '../../pwa/drafts'
 
 export function ListEditor({
-  list = null,
+  list: sourceList = null,
   close,
   onCreated,
 }: {
@@ -17,22 +19,52 @@ export function ListEditor({
   close: () => void
   onCreated?: (id: string) => void
 }) {
+  const [list] = useState(sourceList)
   const { db, context } = useRuntime()
-  const [name, setName] = useState(list?.name ?? '')
-  const [emoji, setEmoji] = useState(list?.emoji ?? '✦')
+  const scope = list ? `list:${list.id}` : 'list:new'
+  const revision = list?.revision ?? 0
+  const initial = (field: string, fallback: string) =>
+    initialDraftField(scope, context.datasetEpoch, revision, field, fallback)
+  const [name, setName] = useState(() => initial('name', list?.name ?? ''))
+  const [emoji, setEmoji] = useState(() => initial('emoji', list?.emoji ?? '✦'))
   const [currency, setCurrency] = useState<ShoppingList['currency']>(
-    list?.currency ?? 'BRL',
+    () =>
+      currencies.find(
+        (value) => value === initial('currency', list?.currency ?? 'BRL'),
+      ) ?? 'BRL',
   )
   const { pending, error, run } = useTask()
   const [secondary, setSecondary] = useState<ShoppingList['secondaryCurrency']>(
-    list?.secondaryCurrency ?? null,
+    () =>
+      currencies.find(
+        (value) =>
+          value === initial('secondary', list?.secondaryCurrency ?? ''),
+      ) ?? null,
   )
-  const [rate, setRate] = useState(list?.manualExchangeRate ?? '')
+  const [rate, setRate] = useState(() =>
+    initial('rate', list?.manualExchangeRate ?? ''),
+  )
+  useFormDraft(
+    scope,
+    revision,
+    list ? `/app/lists/${list.id}?listEdit=1` : '/app?new=1',
+    { name, emoji, currency, secondary: secondary ?? '', rate },
+    {
+      name: list?.name ?? '',
+      emoji: list?.emoji ?? '✦',
+      currency: list?.currency ?? 'BRL',
+      secondary: list?.secondaryCurrency ?? '',
+      rate: list?.manualExchangeRate ?? '',
+    },
+  )
   return (
     <BottomSheet
       open
       onOpenChange={(open) => {
-        if (!open && !pending) close()
+        if (!open && !pending) {
+          discardDraft(scope)
+          close()
+        }
       }}
       title={list ? 'Editar lista' : 'Nova lista'}
       description="Uma lista para o que você quiser."
@@ -54,6 +86,7 @@ export function ListEditor({
                 ? updateList(db, context, list.id, fields, list.revision)
                 : createList(db, context, fields),
             (result) => {
+              discardDraft(scope)
               close()
               if (!list) onCreated?.(result.id)
             },

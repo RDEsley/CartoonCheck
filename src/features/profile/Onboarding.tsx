@@ -8,12 +8,35 @@ import type { Profile } from '../../db/models'
 import { createProfile } from './commands'
 import { errorMessage } from '../../lib/error-message'
 import styles from '../../app/layout.module.css'
+import { useFormDraft } from '../../hooks/useFormDraft'
+import { discardDraft, initialDraftField } from '../../pwa/drafts'
 export function Onboarding() {
   const { db, context, profile } = useRuntime()
   const navigate = useNavigate()
-  const [name, setName] = useState('')
-  const [avatar, setAvatar] =
-    useState<NonNullable<Profile['avatarPresetId']>>('bag')
+  const [name, setName] = useState(() =>
+    initialDraftField('profile:create', context.datasetEpoch, 0, 'name', ''),
+  )
+  const [avatar, setAvatar] = useState<NonNullable<Profile['avatarPresetId']>>(
+    () =>
+      avatarPresets.find(
+        (value) =>
+          value ===
+          initialDraftField(
+            'profile:create',
+            context.datasetEpoch,
+            0,
+            'avatar',
+            'bag',
+          ),
+      ) ?? 'bag',
+  )
+  useFormDraft(
+    'profile:create',
+    0,
+    '/onboarding',
+    { name, avatar },
+    { name: '', avatar: 'bag' },
+  )
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   if (profile !== null) return <Navigate to="/app" replace />
@@ -36,6 +59,7 @@ export function Onboarding() {
           void createProfile(db, context, { name, avatarPresetId: avatar })
             .then(
               () => {
+                discardDraft('profile:create')
                 void navigate('/app', { replace: true })
               },
               (reason: unknown) => {
