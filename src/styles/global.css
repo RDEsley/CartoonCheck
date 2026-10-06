@@ -139,10 +139,12 @@ small {
   color: var(--danger);
   font-weight: 700;
 }
+/* Padding, not a top margin: a margin collapses through the body and the whole
+   page would shift when the first screen replaces this one. */
 .recovery {
   max-width: 540px;
-  margin: 64px auto;
-  padding: 24px;
+  margin: 0 auto;
+  padding: 88px 24px 64px;
   display: grid;
   gap: 24px;
 }
