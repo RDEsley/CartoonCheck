@@ -1,26 +1,39 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 import { useRuntime } from '../app/context'
-import { checkpointDraft, discardDraft, getDraftSnapshot } from '../pwa/drafts'
+import {
+  checkpointDraft,
+  discardDraft,
+  getDraftSnapshot,
+  subscribeDraft,
+} from '../pwa/drafts'
+/**
+ * Checkpoints an open form so an update or a reload cannot drop what was typed.
+ *
+ * `conflicted` means a draft of this same form exists for other data (an older
+ * revision or a replaced dataset). It cannot be applied, and nothing typed now
+ * would be checkpointed, so the form must not be edited until that draft is
+ * saved elsewhere or discarded. A form that has nothing to lose from the stale
+ * draft can ask for it to be replaced instead.
+ */
 export function useFormDraft(
   scope: string,
   revision: number,
   route: string,
   fields: Record<string, string>,
   original: Record<string, string>,
+  replaceStale = false,
 ) {
   const { context } = useRuntime()
-  const [conflicted] = useState(() => {
-    const draft = getDraftSnapshot().draft
-    return (
-      draft?.scope === scope &&
-      (draft.epoch !== context.datasetEpoch || draft.revision !== revision)
-    )
-  })
+  const { draft } = useSyncExternalStore(subscribeDraft, getDraftSnapshot)
+  const stale =
+    draft?.scope === scope &&
+    (draft.epoch !== context.datasetEpoch || draft.revision !== revision)
+  const conflicted = stale && !replaceStale
   const serialized = JSON.stringify(fields)
-  const baseline = JSON.stringify(original)
+  const dirty = serialized !== JSON.stringify(original)
   useEffect(() => {
     if (conflicted) return
-    if (serialized === baseline) {
+    if (!dirty) {
       discardDraft(scope)
       return
     }
@@ -41,12 +54,12 @@ export function useFormDraft(
     })
   }, [
     serialized,
-    baseline,
+    dirty,
     scope,
     revision,
     route,
     context.datasetEpoch,
     conflicted,
   ])
-  return conflicted
+  return { conflicted, dirty }
 }

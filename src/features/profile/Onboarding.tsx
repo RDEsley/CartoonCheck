@@ -37,6 +37,7 @@ export function Onboarding() {
     '/onboarding',
     { name, avatar },
     { name: '', avatar: 'bag' },
+    true,
   )
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)

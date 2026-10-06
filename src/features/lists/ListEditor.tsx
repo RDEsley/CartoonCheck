@@ -8,6 +8,8 @@ import { useTask } from '../../hooks/useTask'
 import { createList, updateList } from './commands'
 import { parseRate } from '../../lib/money'
 import { useFormDraft } from '../../hooks/useFormDraft'
+import { DiscardDialog } from '../../components/DiscardDialog'
+import { DraftConflict } from '../../pwa/DraftConflict'
 import { discardDraft, initialDraftField } from '../../pwa/drafts'
 
 export function ListEditor({
@@ -55,7 +57,8 @@ export function ListEditor({
       throw reason
     }
   }
-  useFormDraft(
+  const [leaving, setLeaving] = useState(false)
+  const { conflicted, dirty } = useFormDraft(
     scope,
     revision,
     list ? `/app/lists/${list.id}?listEdit=1` : '/app?new=1',
@@ -72,7 +75,11 @@ export function ListEditor({
     <BottomSheet
       open
       onOpenChange={(open) => {
-        if (!open && !pending) {
+        if (open || pending) return
+        // A stale draft stays until the user decides what to do with it.
+        if (conflicted) close()
+        else if (dirty) setLeaving(true)
+        else {
           discardDraft(scope)
           close()
         }
@@ -80,156 +87,173 @@ export function ListEditor({
       title={list ? 'Editar lista' : 'Nova lista'}
       description="Uma lista para o que você quiser."
     >
-      <form
-        className="stack"
-        onSubmit={(event) => {
-          event.preventDefault()
-          setInvalidRate(false)
-          void run(
-            async () => {
-              const fields = {
-                name,
-                emoji: emoji.trim() || null,
-                currency,
-                secondaryCurrency: secondary,
-                manualExchangeRate: secondary ? readRate() : null,
-              }
-              return list
-                ? updateList(db, context, list.id, fields, list.revision)
-                : createList(db, context, fields)
-            },
-            (result) => {
-              discardDraft(scope)
-              close()
-              if (!list) onCreated?.(result.id)
-            },
-          )
-        }}
-      >
-        <label>
-          Nome da lista
-          <input
-            data-autofocus
-            value={name}
-            onChange={(event) => {
-              setName(event.target.value)
-            }}
-            maxLength={120}
-            required
-            placeholder="Japão, Mercado, Presentes…"
-          />
-        </label>
-        <div className="row">
-          {['🇯🇵', '🛒', '🎁', '🏠', '👟', '✦'].map((value) => (
-            <CartoonButton
-              key={value}
-              variant={emoji === value ? 'secondary' : 'quiet'}
-              aria-label={`Usar ${value}`}
-              aria-pressed={emoji === value}
-              onClick={() => {
-                setEmoji(value)
+      {conflicted ? (
+        <DraftConflict />
+      ) : (
+        <form
+          className="stack"
+          onSubmit={(event) => {
+            event.preventDefault()
+            setInvalidRate(false)
+            void run(
+              async () => {
+                const fields = {
+                  name,
+                  emoji: emoji.trim() || null,
+                  currency,
+                  secondaryCurrency: secondary,
+                  manualExchangeRate: secondary ? readRate() : null,
+                }
+                return list
+                  ? updateList(db, context, list.id, fields, list.revision)
+                  : createList(db, context, fields)
+              },
+              (result) => {
+                discardDraft(scope)
+                close()
+                if (!list) onCreated?.(result.id)
+              },
+            )
+          }}
+        >
+          <label>
+            Nome da lista
+            <input
+              data-autofocus
+              value={name}
+              onChange={(event) => {
+                setName(event.target.value)
               }}
-            >
-              {value}
-            </CartoonButton>
-          ))}
-        </div>
-        <label>
-          Emoji
-          <input
-            value={emoji}
-            maxLength={16}
-            onChange={(event) => {
-              setEmoji(event.target.value)
-            }}
-          />
-        </label>
-        <label>
-          Moeda
-          <select
-            aria-label="Moeda"
-            value={currency}
-            onChange={(event) => {
-              const value = currencies.find(
-                (entry) => entry === event.target.value,
-              )
-              if (value === undefined || value === currency) return
-              setCurrency(value)
-              // The manual rate belongs to the previous pair of currencies.
-              setSecondary(null)
-              setRate('')
-            }}
-          >
-            {currencies.map((value) => (
-              <option key={value}>{value}</option>
-            ))}
-          </select>
-        </label>
-        <details>
-          <summary style={{ minHeight: 48, cursor: 'pointer' }}>
-            Cotação manual (opcional)
-          </summary>
-          <div className="stack" style={{ paddingTop: 12 }}>
-            <label>
-              Moeda secundária
-              <select
-                aria-label="Moeda secundária"
-                value={secondary ?? ''}
-                onChange={(event) => {
-                  setSecondary(
-                    currencies.find((value) => value === event.target.value) ??
-                      null,
-                  )
+              maxLength={120}
+              required
+              placeholder="Japão, Mercado, Presentes…"
+            />
+          </label>
+          <div className="row">
+            {['🇯🇵', '🛒', '🎁', '🏠', '👟', '✦'].map((value) => (
+              <CartoonButton
+                key={value}
+                variant={emoji === value ? 'secondary' : 'quiet'}
+                aria-label={`Usar ${value}`}
+                aria-pressed={emoji === value}
+                onClick={() => {
+                  setEmoji(value)
                 }}
               >
-                <option value="">Não mostrar conversão</option>
-                {currencies
-                  .filter((value) => value !== currency)
-                  .map((value) => (
-                    <option key={value}>{value}</option>
-                  ))}
-              </select>
-            </label>
-            {secondary && (
-              <label>
-                1 {currency} vale quantos {secondary}?
-                <input
-                  id="list-rate"
-                  inputMode="decimal"
-                  maxLength={24}
-                  value={rate}
-                  onChange={(event) => {
-                    setRate(event.target.value)
-                    if (invalidRate) {
-                      setInvalidRate(false)
-                      clearError()
-                    }
-                  }}
-                  required
-                  {...(invalidRate
-                    ? {
-                        'aria-invalid': true,
-                        'aria-describedby': 'list-error',
-                      }
-                    : {})}
-                />
-              </label>
-            )}
-            <p className="muted">
-              Você define a cotação. A conversão é uma referência; não
-              consultamos taxas na internet.
-            </p>
+                {value}
+              </CartoonButton>
+            ))}
           </div>
-        </details>
-        {error && (
-          <p id="list-error" className="error" role="alert">
-            {error}
-          </p>
-        )}
-        <CartoonButton type="submit" disabled={pending || !name.trim()}>
-          {pending ? 'Salvando…' : list ? 'Salvar lista' : 'Criar lista'}
-        </CartoonButton>
-      </form>
+          <label>
+            Emoji
+            <input
+              value={emoji}
+              maxLength={16}
+              onChange={(event) => {
+                setEmoji(event.target.value)
+              }}
+            />
+          </label>
+          <label>
+            Moeda
+            <select
+              aria-label="Moeda"
+              value={currency}
+              onChange={(event) => {
+                const value = currencies.find(
+                  (entry) => entry === event.target.value,
+                )
+                if (value === undefined || value === currency) return
+                setCurrency(value)
+                // The manual rate belongs to the previous pair of currencies.
+                setSecondary(null)
+                setRate('')
+              }}
+            >
+              {currencies.map((value) => (
+                <option key={value}>{value}</option>
+              ))}
+            </select>
+          </label>
+          <details>
+            <summary style={{ minHeight: 48, cursor: 'pointer' }}>
+              Cotação manual (opcional)
+            </summary>
+            <div className="stack" style={{ paddingTop: 12 }}>
+              <label>
+                Moeda secundária
+                <select
+                  aria-label="Moeda secundária"
+                  value={secondary ?? ''}
+                  onChange={(event) => {
+                    setSecondary(
+                      currencies.find(
+                        (value) => value === event.target.value,
+                      ) ?? null,
+                    )
+                  }}
+                >
+                  <option value="">Não mostrar conversão</option>
+                  {currencies
+                    .filter((value) => value !== currency)
+                    .map((value) => (
+                      <option key={value}>{value}</option>
+                    ))}
+                </select>
+              </label>
+              {secondary && (
+                <label>
+                  1 {currency} vale quantos {secondary}?
+                  <input
+                    id="list-rate"
+                    inputMode="decimal"
+                    maxLength={24}
+                    value={rate}
+                    onChange={(event) => {
+                      setRate(event.target.value)
+                      if (invalidRate) {
+                        setInvalidRate(false)
+                        clearError()
+                      }
+                    }}
+                    required
+                    {...(invalidRate
+                      ? {
+                          'aria-invalid': true,
+                          'aria-describedby': 'list-error',
+                        }
+                      : {})}
+                  />
+                </label>
+              )}
+              <p className="muted">
+                Você define a cotação. A conversão é uma referência; não
+                consultamos taxas na internet.
+              </p>
+            </div>
+          </details>
+          {error && (
+            <p id="list-error" className="error" role="alert">
+              {error}
+            </p>
+          )}
+          <CartoonButton type="submit" disabled={pending || !name.trim()}>
+            {pending ? 'Salvando…' : list ? 'Salvar lista' : 'Criar lista'}
+          </CartoonButton>
+        </form>
+      )}
+      {leaving && (
+        <DiscardDialog
+          keep={() => {
+            setLeaving(false)
+          }}
+          discard={() => {
+            setLeaving(false)
+            discardDraft(scope)
+            close()
+          }}
+        />
+      )}
     </BottomSheet>
   )
 }

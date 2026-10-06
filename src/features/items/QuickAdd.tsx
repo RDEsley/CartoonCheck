@@ -25,7 +25,15 @@ export function QuickAdd({
   const [name, setName] = useState(() =>
     initialDraftField(scope, context.datasetEpoch, 0, 'name', ''),
   )
-  useFormDraft(scope, 0, `/app/lists/${listId}?add=1`, { name }, { name: '' })
+  // A leftover draft from replaced data has nothing this form could restore.
+  useFormDraft(
+    scope,
+    0,
+    `/app/lists/${listId}?add=1`,
+    { name },
+    { name: '' },
+    true,
+  )
   const input = useRef<HTMLInputElement>(null)
   const { pending, error, run } = useTask()
   const [notice, setNotice] = useState('')
