@@ -1,0 +1,144 @@
+.button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 12px 20px;
+  font-weight: 800;
+  border: 2px solid var(--ink);
+  border-radius: 13px 16px 12px 15px;
+  box-shadow: 3px 4px 0 var(--ink);
+  transition:
+    transform var(--quick),
+    box-shadow var(--quick);
+  text-decoration: none;
+}
+.primary {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.secondary {
+  background: var(--secondary);
+  color: var(--on-accent);
+}
+.quiet {
+  background: var(--surface);
+  color: var(--text);
+}
+.danger {
+  background: var(--surface);
+  color: var(--danger);
+}
+.button:active:not(:disabled) {
+  transform: translateY(3px) scale(1.015, 0.96);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+@media (hover: hover) {
+  .button:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+}
+.checkbox,
+.iconButton {
+  min-width: 48px;
+  height: 48px;
+  display: inline-grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  padding: 4px;
+  border-radius: 12px;
+}
+.checkbox:active {
+  transform: scale(1.06, 0.91);
+}
+.checkStroke {
+  stroke-dasharray: 1;
+  transition: stroke-dashoffset var(--normal) ease-out;
+}
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: #15122366;
+  z-index: var(--z-overlay);
+  animation: fade var(--normal) ease-out;
+}
+.sheet {
+  position: fixed;
+  z-index: var(--z-dialog);
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(100%, 560px);
+  max-height: 90dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  border-bottom: 0;
+  border-radius: 26px 29px 0 0;
+  padding: 24px 24px calc(28px + env(safe-area-inset-bottom));
+  animation: sheet var(--playful) cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sheetHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.sheetHeading h2 {
+  margin: 8px 0 16px;
+  font-size: 24px;
+}
+.empty {
+  text-align: center;
+  padding: 44px 16px;
+}
+.empty h2 {
+  margin-top: 20px;
+  font-size: 24px;
+}
+.progress {
+  height: 12px;
+  border: 2px solid var(--ink);
+  background: var(--surface);
+  overflow: hidden;
+  border-radius: 9px 7px 9px 6px;
+}
+.progress span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--success);
+  transform-origin: left;
+  transition: transform var(--playful) ease-out;
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sheet {
+  from {
+    translate: 0 30px;
+    opacity: 0;
+  }
+  to {
+    translate: 0 0;
+    opacity: 1;
+  }
+}
+@media (min-width: 700px) {
+  .sheet {
+    bottom: 50%;
+    transform: translate(-50%, 50%);
+    border-bottom: 2px solid var(--ink);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+}
