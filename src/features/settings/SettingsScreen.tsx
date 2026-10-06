@@ -13,7 +13,6 @@ import styles from '../../app/layout.module.css'
 import settingsStyles from './settings.module.css'
 import { InstallButton } from '../install/InstallButton'
 import { PageHeading } from '../../components/PageHeading'
-import { appVersion } from '../../app/version'
 import {
   formatBytes,
   readStorageState,
@@ -212,7 +211,7 @@ export function SettingsScreen() {
             </CartoonButton>
           )}
           <p className="muted" style={{ fontSize: 14, margin: '16px 0 0' }}>
-            Versão {appVersion}
+            Versão {__APP_VERSION__}
           </p>
         </div>
         {error && (

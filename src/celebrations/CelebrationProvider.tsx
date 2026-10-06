@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { useLocation } from 'react-router'
-import { useReducedMotion } from 'motion/react'
+import { useSystemReducedMotion } from '../hooks/useSystemReducedMotion'
 import { useRuntime } from '../app/context'
 import { useFeedback } from '../app/feedback-context'
 import { getItemIds } from '../features/items/queries'
@@ -12,7 +12,7 @@ import '../styles/celebrations.css'
 export function CelebrationProvider({ children }: { children: ReactNode }) {
   const { profile, db } = useRuntime()
   const { show } = useFeedback()
-  const reduced = useReducedMotion() === true || profile?.reduceMotion === true
+  const reduced = useSystemReducedMotion() || profile?.reduceMotion === true
   const location = useLocation()
   // The context value stays stable so item cards do not re-render with it.
   const latest = useRef({ db, show, reduced, profile })

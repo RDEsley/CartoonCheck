@@ -22,7 +22,8 @@ import { ListEditor } from './ListEditor'
 import type { ShoppingList } from '../../db/models'
 import styles from '../../app/layout.module.css'
 import { ItemsPanel } from '../items/ItemsPanel'
-import { motion } from 'motion/react'
+import * as m from 'motion/react-m'
+import { MotionBoundary } from '../../animations/MotionBoundary'
 import { springs } from '../../animations/tokens'
 import { ListTotals } from './ListTotals'
 import { PageHeading } from '../../components/PageHeading'
@@ -54,7 +55,7 @@ export function ListScreen() {
     )
   const { list, pendingCount, purchasedCount, progress } = summary
   return (
-    <>
+    <MotionBoundary>
       <Link
         to="/app"
         className="row"
@@ -73,7 +74,7 @@ export function ListScreen() {
           </PageHeading>
           <p className="muted">
             {pendingCount} para comprar ·{' '}
-            <motion.span
+            <m.span
               key={purchasedCount}
               style={{ display: 'inline-block' }}
               initial={{ scale: 0.92 }}
@@ -81,7 +82,7 @@ export function ListScreen() {
               transition={springs.bouncy}
             >
               {purchasedCount} comprados
-            </motion.span>
+            </m.span>
           </p>
         </div>
         <CartoonButton
@@ -222,6 +223,6 @@ export function ListScreen() {
           </div>
         </BottomSheet>
       )}
-    </>
+    </MotionBoundary>
   )
 }

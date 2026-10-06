@@ -16,6 +16,27 @@ if (
 
 export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(manifest.version) },
+  build: {
+    rolldownOptions: {
+      output: {
+        // Libraries change less often than the app, so they get chunks of their
+        // own: an update then downloads only what actually changed.
+        codeSplitting: {
+          groups: [
+            {
+              name: 'react',
+              test: /node_modules[\\/](?:react|react-dom|scheduler)[\\/]/,
+            },
+            { name: 'router', test: /node_modules[\\/]react-router[\\/]/ },
+            {
+              name: 'data',
+              test: /node_modules[\\/](?:dexie|dexie-react-hooks|zod)[\\/]/,
+            },
+          ],
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({

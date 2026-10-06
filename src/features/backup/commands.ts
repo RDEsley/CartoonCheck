@@ -4,7 +4,6 @@ import type { CommandContext } from '../../db/context'
 import { createId } from '../../lib/create-id'
 import { z } from 'zod'
 import { imageAssetSchema } from '../../db/models'
-import { appVersion } from '../../app/version'
 import {
   assertBackupAssets,
   assertBackupRelations,
@@ -31,7 +30,7 @@ export async function snapshotBackup(
         format: 'cartoon-check',
         formatVersion: 1,
         exportedAt: new Date().toISOString(),
-        appVersion,
+        appVersion: __APP_VERSION__,
         data: { profile: profile[0] ?? null, lists, items, history },
         assets: assets.map((asset) => ({
           id: asset.id,

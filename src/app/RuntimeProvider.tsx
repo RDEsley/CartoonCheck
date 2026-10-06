@@ -1,7 +1,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { MotionConfig, useReducedMotion } from 'motion/react'
+import { useSystemReducedMotion } from '../hooks/useSystemReducedMotion'
 import type { CommandContext } from '../db/context'
 import { database, initializeRuntime, subscribeDatabase } from './runtime'
 import { RuntimeContext } from './context'
@@ -119,7 +119,7 @@ function ReadyRuntime({
   const profile = profiles?.[0] ?? null
   // Motion is reduced when either the system or the local preference asks for it.
   const reducedMotion =
-    useReducedMotion() === true || profile?.reduceMotion === true
+    useSystemReducedMotion() || profile?.reduceMotion === true
   useEffect(() => {
     const root = document.documentElement
     root.dataset.theme = profile?.themeId ?? 'comic-pop'
@@ -159,9 +159,7 @@ function ReadyRuntime({
     )
   return (
     <RuntimeContext.Provider value={{ db: database, context, profile }}>
-      <MotionConfig reducedMotion={profile?.reduceMotion ? 'always' : 'user'}>
-        {children}
-      </MotionConfig>
+      {children}
     </RuntimeContext.Provider>
   )
 }

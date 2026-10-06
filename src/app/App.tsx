@@ -5,20 +5,29 @@ import { ErrorBoundary } from './ErrorBoundary'
 import { AppShell } from './AppShell'
 import { Onboarding } from '../features/profile/Onboarding'
 import { Home } from '../features/lists/Home'
-import { ListScreen } from '../features/lists/ListScreen'
 import { FeedbackProvider } from './FeedbackProvider'
-import { HistoryScreen } from '../features/history/HistoryScreen'
 import { CelebrationProvider } from '../celebrations/CelebrationProvider'
-import { SettingsScreen } from '../features/settings/SettingsScreen'
-import { ProfileScreen } from '../features/profile/ProfileScreen'
 import { Wordmark } from '../components/BrandArt'
 import { Landing } from '../routes/Landing'
 import { PageHeading } from '../components/PageHeading'
 import styles from './layout.module.css'
-const BackupScreen = lazy(async () => {
-  const module = await import('../features/backup/BackupScreen')
-  return { default: module.BackupScreen }
-})
+// The first screens ship with the entry; the others load when they are opened
+// and are precached by the service worker for offline use.
+const ListScreen = lazy(async () => ({
+  default: (await import('../features/lists/ListScreen')).ListScreen,
+}))
+const HistoryScreen = lazy(async () => ({
+  default: (await import('../features/history/HistoryScreen')).HistoryScreen,
+}))
+const SettingsScreen = lazy(async () => ({
+  default: (await import('../features/settings/SettingsScreen')).SettingsScreen,
+}))
+const ProfileScreen = lazy(async () => ({
+  default: (await import('../features/profile/ProfileScreen')).ProfileScreen,
+}))
+const BackupScreen = lazy(async () => ({
+  default: (await import('../features/backup/BackupScreen')).BackupScreen,
+}))
 
 export function App() {
   return (
@@ -47,14 +56,7 @@ export function App() {
                   <Route path="history" element={<HistoryScreen />} />
                   <Route path="settings" element={<SettingsScreen />} />
                   <Route path="settings/profile" element={<ProfileScreen />} />
-                  <Route
-                    path="settings/backup"
-                    element={
-                      <Suspense fallback={<p role="status">Abrindo backup…</p>}>
-                        <BackupScreen />
-                      </Suspense>
-                    }
-                  />
+                  <Route path="settings/backup" element={<BackupScreen />} />
                 </Route>
                 <Route
                   path="*"

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { ArrowUpRight, WifiOff, LockKeyhole, Zap } from 'lucide-react'
-import { useReducedMotion } from 'motion/react'
+import { useSystemReducedMotion } from '../hooks/useSystemReducedMotion'
 import { Wordmark, BrandArt } from '../components/BrandArt'
 import { CartoonCheckbox } from '../components/CartoonCheckbox'
 import { InstallButton } from '../features/install/InstallButton'
@@ -11,7 +11,7 @@ import styles from './landing.module.css'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 export function Landing() {
   const { profile } = useRuntime()
-  const systemReduced = useReducedMotion()
+  const systemReduced = useSystemReducedMotion()
   const [checked, setChecked] = useState(false)
   const card = useRef<HTMLDivElement>(null)
   useDocumentTitle(null)
@@ -75,9 +75,7 @@ export function Landing() {
                   const rect = card.current?.getBoundingClientRect()
                   if (next && rect)
                     celebrations.purchase('Um presente especial', rect, {
-                      reduced:
-                        systemReduced === true ||
-                        profile?.reduceMotion === true,
+                      reduced: systemReduced || profile?.reduceMotion === true,
                       haptics: false,
                       sakura: profile?.themeId === 'sakura',
                     })

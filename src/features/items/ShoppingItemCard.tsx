@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useRef } from 'react'
-import { motion } from 'motion/react'
+import * as m from 'motion/react-m'
 import { duration } from '../../animations/tokens'
 import { useCelebrations } from '../../celebrations/context'
 import { useRuntime } from '../../app/context'
@@ -42,7 +42,7 @@ export function ShoppingItemCard({
   if (!item) return null
   const purchased = item.status === 'purchased'
   return (
-    <motion.li
+    <m.li
       ref={card}
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
@@ -110,6 +110,6 @@ export function ShoppingItemCard({
           {error}
         </p>
       )}
-    </motion.li>
+    </m.li>
   )
 }

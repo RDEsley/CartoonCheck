@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet, Navigate, useLocation } from 'react-router'
 import { House, Clock3, Settings2, Archive } from 'lucide-react'
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useRuntime } from './context'
 import { Wordmark } from '../components/BrandArt'
 import styles from './layout.module.css'
@@ -27,7 +27,9 @@ export function AppShell() {
       <main id="main-content" className={styles.main}>
         <PwaStatus />
         <DraftRecovery />
-        <Outlet />
+        <Suspense fallback={<p role="status">Abrindo…</p>}>
+          <Outlet />
+        </Suspense>
       </main>
       <nav aria-label="Navegação principal" className={styles.nav}>
         <NavLink to="/app" end>
