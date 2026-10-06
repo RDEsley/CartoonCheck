@@ -19,6 +19,7 @@ test('quickly adds items, persists purchases, edits and removes an item', async 
   await page.reload()
   await page.getByRole('checkbox', { name: 'Comprar Nintendo Switch 2', exact: true }).click()
   await expect(page.getByRole('checkbox', { name: 'Comprar Nintendo Switch 2', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('checkbox', { name: 'Comprar KitKat', exact: true })).not.toBeFocused()
   await page.getByRole('tab', { name: 'Comprei', exact: true }).click()
   await page.getByRole('checkbox', { name: 'Desmarcar Nintendo Switch 2', exact: true }).click()
   await page.getByRole('tab', { name: 'Quero comprar', exact: true }).click()

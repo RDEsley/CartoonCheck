@@ -8,7 +8,7 @@ export function CartoonCheckbox({
   checked: boolean
   label: string
   disabled?: boolean
-  onChange: () => void
+  onChange: (viaKeyboard: boolean) => void
 }) {
   return (
     <button
@@ -17,7 +17,10 @@ export function CartoonCheckbox({
       aria-checked={checked}
       aria-label={label}
       disabled={disabled}
-      onClick={onChange}
+      onClick={(event) => {
+        // Keyboard and assistive activation dispatch a click without a pointer count.
+        onChange(event.detail === 0)
+      }}
       className={styles.checkbox}
     >
       <svg viewBox="0 0 44 44" width="40" height="40" aria-hidden="true">

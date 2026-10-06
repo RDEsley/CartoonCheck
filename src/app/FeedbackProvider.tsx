@@ -30,6 +30,35 @@ function reserveSpace(element: HTMLElement | null) {
     root.style.removeProperty('--toast-space')
   }
 }
+// The Undo button disappears once used, so focus moves to the restored item
+// when it is on screen, or to the page title. A pointer never scrolls the page.
+function focusAfterUndo(action: UndoAction, viaKeyboard: boolean) {
+  const expected =
+    action.kind === 'delete'
+      ? action.snapshot.item
+      : action.kind === 'purchase'
+        ? {
+            id: action.result.item.id,
+            status: action.result.previousPurchase.status,
+          }
+        : null
+  const selector =
+    expected === null
+      ? null
+      : `[data-item-id="${expected.id}"][data-purchased="${String(expected.status === 'purchased')}"] [role="checkbox"]`
+  let frames = 0
+  const attempt = () => {
+    const restored =
+      selector === null ? null : document.querySelector<HTMLElement>(selector)
+    if (restored !== null) restored.focus({ preventScroll: !viaKeyboard })
+    else if (selector === null || frames++ >= 20)
+      document
+        .getElementById('page-title')
+        ?.focus({ preventScroll: !viaKeyboard })
+    else requestAnimationFrame(attempt)
+  }
+  requestAnimationFrame(attempt)
+}
 interface Toast {
   message: string
   action?: UndoAction
@@ -83,8 +112,9 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
               <CartoonButton
                 variant="quiet"
                 disabled={pending}
-                onClick={() => {
+                onClick={(event) => {
                   const action = toast.action
+                  const viaKeyboard = event.detail === 0
                   if (action)
                     void run(
                       () => undoItemAction(db, context, action),
@@ -96,6 +126,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
                             : current,
                         )
                         announce('Desfeito. Tudo no lugar!')
+                        focusAfterUndo(action, viaKeyboard)
                       },
                     )
                 }}

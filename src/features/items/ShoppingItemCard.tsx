@@ -13,6 +13,15 @@ import { useFeedback } from '../../app/feedback-context'
 import { StoredImage } from '../../components/StoredImage'
 import { formatPrice } from '../../lib/money'
 import type { ShoppingList } from '../../db/models'
+function neighborCheckbox(card: HTMLElement | null) {
+  const boxes = Array.from(
+    card
+      ?.closest('[data-item-list]')
+      ?.querySelectorAll<HTMLElement>('[role="checkbox"]') ?? [],
+  )
+  const index = boxes.findIndex((box) => card?.contains(box))
+  return boxes[index + 1] ?? boxes[index - 1] ?? null
+}
 export function ShoppingItemCard({
   id,
   archived,
@@ -39,14 +48,17 @@ export function ShoppingItemCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: duration.normal }}
       className={styles.item}
+      data-item-id={id}
       data-purchased={purchased}
     >
       <CartoonCheckbox
         checked={purchased}
         label={`${purchased ? 'Desmarcar' : 'Comprar'} ${item.name}`}
         disabled={archived || pending}
-        onChange={() => {
+        onChange={(viaKeyboard) => {
           const rect = card.current?.getBoundingClientRect()
+          // The item leaves this tab once saved; a pointer keeps its place, a keyboard needs a new one.
+          const neighbor = viaKeyboard ? neighborCheckbox(card.current) : null
           void run(
             () => setPurchased(db, context, id, !purchased),
             (result) => {
@@ -56,18 +68,20 @@ export function ShoppingItemCard({
                   kind: 'purchase',
                   result,
                 })
-              requestAnimationFrame(() => {
-                const target =
-                  document.querySelector<HTMLButtonElement>(
-                    '[data-item-list] [role="checkbox"]',
-                  ) ??
-                  document.querySelector<HTMLButtonElement>(
-                    '[role="tab"][aria-selected="true"]',
-                  )
-                target?.focus()
-              })
+              if (viaKeyboard)
+                (neighbor?.isConnected
+                  ? neighbor
+                  : document.querySelector<HTMLElement>('[data-add-item]')
+                )?.focus()
             },
-          )
+          ).then((saved) => {
+            if (!saved && viaKeyboard)
+              requestAnimationFrame(() => {
+                card.current
+                  ?.querySelector<HTMLElement>('[role="checkbox"]')
+                  ?.focus()
+              })
+          })
         }}
       />
       {item.photoId && <StoredImage id={item.photoId} />}

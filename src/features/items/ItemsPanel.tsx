@@ -113,6 +113,7 @@ export function ItemsPanel({ list }: { list: ShoppingList }) {
       {list.status === 'active' && (
         <CartoonButton
           className={styles.addButton}
+          data-add-item
           onClick={() => {
             setAdding(true)
           }}
