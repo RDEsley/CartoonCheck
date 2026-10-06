@@ -1,0 +1,49 @@
+.page {
+  display: grid;
+  min-height: 100vh;
+  min-height: 100dvh;
+  align-items: center;
+  padding: calc(32px + env(safe-area-inset-top)) 24px
+    calc(32px + env(safe-area-inset-bottom));
+}
+
+.introduction {
+  width: 100%;
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+.wordmark {
+  margin: 0 0 40px;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2.75rem, 10vw, 5rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.055em;
+}
+
+.description {
+  max-width: 36ch;
+  margin: 24px 0 0;
+  color: #655d6f;
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+.status {
+  display: inline-block;
+  margin: 32px 0 0;
+  padding: 8px 14px;
+  border: 2px solid #27233a;
+  border-radius: 12px 14px 10px 13px;
+  background-color: #fcca54;
+  box-shadow: 0 3px 0 #27233a;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
