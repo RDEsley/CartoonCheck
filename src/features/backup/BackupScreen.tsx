@@ -11,6 +11,7 @@ import type { BackupData } from './format'
 import { exportBackup, readBackup, downloadBackup } from './client'
 import { celebrations } from '../../celebrations/engine'
 import styles from '../../app/layout.module.css'
+import { PageHeading } from '../../components/PageHeading'
 export function BackupScreen() {
   const { db, context, profile } = useRuntime()
   const { show, dismiss } = useFeedback()
@@ -23,9 +24,7 @@ export function BackupScreen() {
       <div className={styles.heading}>
         <div>
           <p className={styles.eyebrow}>Uma cópia para guardar</p>
-          <h1 id="page-title" tabIndex={-1}>
-            Seus dados, com você.
-          </h1>
+          <PageHeading title="Backup">Seus dados, com você.</PageHeading>
           <p className="muted">
             Um backup inclui perfil, listas, itens, histórico, preferências e
             fotos.

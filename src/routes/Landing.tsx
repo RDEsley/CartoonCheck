@@ -8,11 +8,13 @@ import { InstallButton } from '../features/install/InstallButton'
 import { celebrations } from '../celebrations/engine'
 import { useRuntime } from '../app/context'
 import styles from './landing.module.css'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 export function Landing() {
   const { profile } = useRuntime()
   const systemReduced = useReducedMotion()
   const [checked, setChecked] = useState(false)
   const card = useRef<HTMLDivElement>(null)
+  useDocumentTitle(null)
   return (
     <div className={styles.page}>
       <header className={styles.header}>

@@ -13,6 +13,7 @@ import { SettingsScreen } from '../features/settings/SettingsScreen'
 import { ProfileScreen } from '../features/profile/ProfileScreen'
 import { Wordmark } from '../components/BrandArt'
 import { Landing } from '../routes/Landing'
+import { PageHeading } from '../components/PageHeading'
 import styles from './layout.module.css'
 const BackupScreen = lazy(async () => {
   const module = await import('../features/backup/BackupScreen')
@@ -60,7 +61,9 @@ export function App() {
                   element={
                     <main className={styles.onboarding}>
                       <Wordmark />
-                      <h1>Este caminho ainda não está pronto.</h1>
+                      <PageHeading title="Página não encontrada">
+                        Este caminho ainda não está pronto.
+                      </PageHeading>
                       <Link to="/app" className="text-link">
                         Voltar para suas listas
                       </Link>

@@ -12,6 +12,7 @@ import { compressImage } from '../items/images'
 import { updateProfile } from './commands'
 import styles from '../../app/layout.module.css'
 import { useFormDraft } from '../../hooks/useFormDraft'
+import { PageHeading } from '../../components/PageHeading'
 import {
   checkpointPhoto,
   discardDraft,
@@ -69,9 +70,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
       <div className={styles.heading}>
         <div>
           <p className={styles.eyebrow}>Só seu</p>
-          <h1 id="page-title" tabIndex={-1}>
-            Seu perfil
-          </h1>
+          <PageHeading title="Seu perfil" />
         </div>
       </div>
       <form

@@ -11,7 +11,6 @@ export function AppShell() {
   const location = useLocation()
   useEffect(() => {
     window.scrollTo(0, 0)
-    document.getElementById('page-title')?.focus()
   }, [location.pathname])
   if (profile === null) return <Navigate to="/onboarding" replace />
   return (

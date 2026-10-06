@@ -4,7 +4,7 @@ test.use({
   isMobile: false,
   hasTouch: false,
 })
-test('supports keyboard entry, sheet focus restoration and focus after purchase and undo', async ({
+test('supports keyboard entry, titled screens and focus after sheets, purchases and undo', async ({
   page,
 }) => {
   await page.goto('/app')
@@ -19,6 +19,8 @@ test('supports keyboard entry, sheet focus restoration and focus after purchase 
   await page.keyboard.press('Enter')
   await page.getByLabel('Nome da lista').fill('Japão')
   await page.getByLabel('Nome da lista').press('Enter')
+  await expect(page.getByRole('heading', { level: 1 })).toBeFocused()
+  await expect(page).toHaveTitle('Japão · Cartoon Check')
   const add = page.getByRole('button', { name: 'Adicionar', exact: true })
   await add.focus()
   await page.keyboard.press('Enter')
@@ -62,4 +64,10 @@ test('supports keyboard entry, sheet focus restoration and focus after purchase 
   await expect(
     page.getByRole('checkbox', { name: 'Desmarcar Switch', exact: true }),
   ).toBeVisible()
+  await page.getByRole('link', { name: 'Histórico', exact: true }).focus()
+  await page.keyboard.press('Enter')
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Seu histórico' }),
+  ).toBeFocused()
+  await expect(page).toHaveTitle('Seu histórico · Cartoon Check')
 })

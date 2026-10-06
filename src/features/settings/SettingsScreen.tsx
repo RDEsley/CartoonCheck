@@ -11,6 +11,7 @@ import { themes } from '../../db/models'
 import styles from '../../app/layout.module.css'
 import settingsStyles from './settings.module.css'
 import { InstallButton } from '../install/InstallButton'
+import { PageHeading } from '../../components/PageHeading'
 const themeLabels = {
   'comic-pop': 'Comic Pop',
   sakura: 'Sakura',
@@ -39,9 +40,7 @@ export function SettingsScreen() {
       <div className={styles.heading}>
         <div>
           <p className={styles.eyebrow}>Do seu jeito</p>
-          <h1 id="page-title" tabIndex={-1}>
-            Ajustes
-          </h1>
+          <PageHeading title="Ajustes" />
           <p className="muted">Um pouco mais de você em cada check.</p>
         </div>
       </div>

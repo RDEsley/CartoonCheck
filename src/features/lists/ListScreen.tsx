@@ -24,6 +24,8 @@ import { ItemsPanel } from '../items/ItemsPanel'
 import { motion } from 'motion/react'
 import { springs } from '../../animations/tokens'
 import { ListTotals } from './ListTotals'
+import { PageHeading } from '../../components/PageHeading'
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 
 export function ListScreen() {
   const { listId = '' } = useParams()
@@ -35,6 +37,7 @@ export function ListScreen() {
   const [editing, setEditing] = useState<ShoppingList | null>(null)
   const [deleting, setDeleting] = useState<ShoppingList | null>(null)
   const { pending, error, run } = useTask()
+  useDocumentTitle(summary === null ? 'Lista não encontrada' : null)
   if (summary === undefined) return <p role="status">Abrindo lista…</p>
   if (summary === null)
     return (
@@ -63,13 +66,9 @@ export function ListScreen() {
           <p className={styles.eyebrow}>
             {list.status === 'archived' ? 'Lista arquivada' : 'Bora dar check?'}
           </p>
-          <h1
-            id="page-title"
-            tabIndex={-1}
-            style={{ overflowWrap: 'anywhere' }}
-          >
+          <PageHeading key={list.id} title={list.name}>
             {list.emoji} {list.name}
-          </h1>
+          </PageHeading>
           <p className="muted">
             {pendingCount} para comprar ·{' '}
             <motion.span

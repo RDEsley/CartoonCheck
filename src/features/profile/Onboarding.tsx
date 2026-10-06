@@ -10,6 +10,7 @@ import { errorMessage } from '../../lib/error-message'
 import styles from '../../app/layout.module.css'
 import { useFormDraft } from '../../hooks/useFormDraft'
 import { discardDraft, initialDraftField } from '../../pwa/drafts'
+import { PageHeading } from '../../components/PageHeading'
 export function Onboarding() {
   const { db, context, profile } = useRuntime()
   const navigate = useNavigate()
@@ -43,11 +44,11 @@ export function Onboarding() {
   return (
     <main className={styles.onboarding}>
       <Wordmark />
-      <h1>
+      <PageHeading title="Primeiro uso">
         Como podemos
         <br />
         te chamar?
-      </h1>
+      </PageHeading>
       <p className="muted">Só um nome, e a lista já é sua.</p>
       <form
         className="stack"

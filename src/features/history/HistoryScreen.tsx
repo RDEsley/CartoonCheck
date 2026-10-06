@@ -5,6 +5,7 @@ import { EmptyState } from '../../components/EmptyState'
 import { CartoonButton } from '../../components/CartoonButton'
 import type { HistoryEntry } from '../../db/models'
 import { getHistoryPage } from './queries'
+import { PageHeading } from '../../components/PageHeading'
 import styles from '../../app/layout.module.css'
 const labels: Record<HistoryEntry['action'], string> = {
   list_created: 'Lista criada',
@@ -33,9 +34,7 @@ export function HistoryScreen() {
       <div className={styles.heading}>
         <div>
           <p className={styles.eyebrow}>Pequenas conquistas</p>
-          <h1 id="page-title" tabIndex={-1}>
-            Seu histórico
-          </h1>
+          <PageHeading title="Seu histórico" />
           <p className="muted">O caminho de cada check.</p>
         </div>
       </div>
