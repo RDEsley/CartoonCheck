@@ -1,4 +1,4 @@
-import { NavLink, Outlet, Navigate, useLocation } from 'react-router'
+import { Link, NavLink, Outlet, Navigate, useLocation } from 'react-router'
 import { House, Clock3, Settings2, Archive } from 'lucide-react'
 import { useEffect } from 'react'
 import { useRuntime } from './context'
@@ -20,9 +20,9 @@ export function AppShell() {
         Ir para o conteúdo
       </a>
       <header className={styles.header}>
-        <NavLink to="/app" aria-label="Cartoon Check: início">
+        <Link to="/app" aria-label="Cartoon Check: início">
           <Wordmark />
-        </NavLink>
+        </Link>
         <span className={styles.localBadge}>no seu dispositivo</span>
       </header>
       <main id="main-content" className={styles.main}>

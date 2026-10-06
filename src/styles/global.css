@@ -98,6 +98,9 @@ h3 {
 svg {
   flex-shrink: 0;
 }
+small {
+  font-size: 0.875rem;
+}
 .sr-only {
   position: absolute;
   width: 1px;

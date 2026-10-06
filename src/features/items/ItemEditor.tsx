@@ -238,7 +238,7 @@ export function ItemEditor({
             }}
           />
         </label>
-        <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+        <p className="muted" style={{ margin: 0, fontSize: 14 }}>
           Preço total deste item, incluindo todas as unidades. Use vírgula ou
           ponto decimal, sem separador de milhares.
         </p>

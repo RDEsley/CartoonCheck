@@ -1,4 +1,5 @@
-:root {
+:root,
+[data-theme='comic-pop'] {
   --background: #fff8eb;
   --surface: #fff;
   --text: #27233a;

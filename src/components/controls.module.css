@@ -42,6 +42,12 @@
 .button:active:not(:disabled, [aria-disabled='true']) .face {
   box-shadow: 1px 1px 0 var(--ink);
 }
+/* A pressed toggle shows an ink ring, not only a different fill. */
+.button[aria-pressed='true'] .face {
+  box-shadow:
+    inset 0 0 0 2px var(--ink),
+    1px 1px 0 var(--ink);
+}
 /* Squash and displacement are motion: they stay off when motion is reduced. */
 @media (hover: hover) {
   :global(:root:not([data-reduced-motion='true']))

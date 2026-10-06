@@ -1,7 +1,8 @@
 .page {
   max-width: 1120px;
   margin: auto;
-  padding: 0 32px;
+  padding: 0 max(32px, env(safe-area-inset-right)) 0
+    max(32px, env(safe-area-inset-left));
 }
 .header {
   display: flex;
@@ -28,7 +29,7 @@
   padding: 80px 0 64px;
 }
 .eyebrow {
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.1em;
   font-weight: 800;
   color: var(--muted);
@@ -42,7 +43,7 @@
   margin: 28px 0;
 }
 .copy h1 span {
-  color: var(--text);
+  color: var(--on-accent);
   background: var(--accent);
   padding: 0 12px 3px 8px;
   border-radius: 8px 11px 7px 10px;
@@ -87,7 +88,7 @@
   transform: translateY(2px);
 }
 .small {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
   margin-top: 24px;
 }
@@ -100,7 +101,7 @@
   border: 2.5px solid var(--ink);
   box-shadow: 8px 9px 0 var(--ink);
   border-radius: 19px 23px 17px 21px;
-  rotate: -3deg;
+  rotate: -1.5deg;
   padding: 36px 24px 22px;
 }
 .paper h2 {
@@ -110,15 +111,15 @@
 .ticket {
   position: absolute;
   top: -18px;
-  left: 22px;
+  left: 12px;
   padding: 9px 14px;
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  font-size: 14px;
+  letter-spacing: 0.04em;
   font-weight: 900;
   background: var(--secondary);
   color: var(--on-accent);
   border: 2px solid var(--ink);
-  rotate: 2deg;
+  rotate: 1.5deg;
 }
 .demoItem {
   border-bottom: 2px dashed var(--line);
@@ -138,7 +139,7 @@
   flex-shrink: 0;
 }
 .try {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
   margin: 20px 0 0;
   line-height: 1.6;
@@ -165,7 +166,7 @@
   color: var(--on-accent);
   padding: 14px 20px;
   border-radius: 50%;
-  rotate: 9deg;
+  rotate: 1.5deg;
   box-shadow: 3px 4px 0 var(--ink);
   font-size: 15px;
   text-align: center;
@@ -195,7 +196,7 @@
 }
 .footer {
   padding: 24px 0 calc(32px + env(safe-area-inset-bottom));
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
   display: flex;
   justify-content: space-between;
@@ -224,13 +225,14 @@
 }
 @media (max-width: 650px) {
   .page {
-    padding: 0 24px;
+    padding: 0 max(24px, env(safe-area-inset-right)) 0
+      max(24px, env(safe-area-inset-left));
   }
   .header {
     min-height: 80px;
   }
   .header a {
-    font-size: 13px;
+    font-size: 14px;
   }
   .header a svg {
     display: none;

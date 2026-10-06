@@ -61,7 +61,7 @@ export function Landing() {
             <BrandArt size={152} />
           </div>
           <div className={styles.paper}>
-            <span className={styles.ticket}>MINHA PRÓXIMA AVENTURA</span>
+            <span className={styles.ticket}>PRÓXIMA AVENTURA</span>
             <h2>Coisas que eu quero ✦</h2>
             <div ref={card} className={styles.demoItem}>
               <CartoonCheckbox
@@ -108,7 +108,7 @@ export function Landing() {
                 : '↑ Toque no primeiro check. É por sua conta.'}
             </p>
           </div>
-          <span className={styles.sticker}>
+          <span className={styles.sticker} lang="en">
             check it.
             <br />
             <strong>celebrate it.</strong>
