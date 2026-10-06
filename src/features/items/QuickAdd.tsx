@@ -5,6 +5,7 @@ import { BottomSheet } from '../../components/BottomSheet'
 import { CartoonButton } from '../../components/CartoonButton'
 import { useTask } from '../../hooks/useTask'
 import { addItem } from './commands'
+import { useFeedback } from '../../app/feedback-context'
 export function QuickAdd({
   listId,
   close,
@@ -15,6 +16,7 @@ export function QuickAdd({
   added: () => void
 }) {
   const { db, context } = useRuntime()
+  const { show } = useFeedback()
   const [name, setName] = useState('')
   const input = useRef<HTMLInputElement>(null)
   const { pending, error, run } = useTask()
@@ -38,6 +40,7 @@ export function QuickAdd({
             (item) => {
               setName('')
               setNotice(`${item.name} adicionado!`)
+              show('Item adicionado!', { kind: 'add', item })
               added()
               input.current?.focus()
             },

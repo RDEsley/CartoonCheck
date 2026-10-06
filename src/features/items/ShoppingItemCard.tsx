@@ -5,6 +5,7 @@ import { useTask } from '../../hooks/useTask'
 import type { ShoppingItem } from '../../db/models'
 import { setPurchased } from './commands'
 import styles from './items.module.css'
+import { useFeedback } from '../../app/feedback-context'
 export function ShoppingItemCard({
   id,
   archived,
@@ -17,6 +18,7 @@ export function ShoppingItemCard({
   changed: (notice: string) => void
 }) {
   const { db, context } = useRuntime()
+  const { show } = useFeedback()
   const item = useLiveQuery(() => db.items.get(id), [db, id])
   const { pending, error, run } = useTask()
   if (!item) return null
@@ -31,6 +33,11 @@ export function ShoppingItemCard({
           void run(
             () => setPurchased(db, context, id, !purchased),
             (result) => {
+              if (result.changed)
+                show(purchased ? 'Compra desfeita.' : 'Comprado! ✨', {
+                  kind: 'purchase',
+                  result,
+                })
               if (result.changed)
                 changed(
                   purchased

@@ -6,6 +6,7 @@ import { BottomSheet } from '../../components/BottomSheet'
 import { CartoonButton } from '../../components/CartoonButton'
 import { useTask } from '../../hooks/useTask'
 import { deleteItem, updateItem } from './commands'
+import { useFeedback } from '../../app/feedback-context'
 export function ItemEditor({
   item,
   close,
@@ -16,6 +17,7 @@ export function ItemEditor({
   changed: (notice: string) => void
 }) {
   const { db, context } = useRuntime()
+  const { show } = useFeedback()
   const [name, setName] = useState(item.name)
   const { pending, error, run } = useTask()
   return (
@@ -60,9 +62,10 @@ export function ItemEditor({
           onClick={() => {
             void run(
               () => deleteItem(db, context, item.id),
-              () => {
+              (snapshot) => {
                 close()
                 changed('Item removido.')
+                show('Item removido.', { kind: 'delete', snapshot })
               },
             )
           }}
