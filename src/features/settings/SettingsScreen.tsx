@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Profile } from '../../db/models'
 import { useRuntime } from '../../app/context'
 import { useFeedback } from '../../app/feedback-context'
@@ -12,6 +12,13 @@ import styles from '../../app/layout.module.css'
 import settingsStyles from './settings.module.css'
 import { InstallButton } from '../install/InstallButton'
 import { PageHeading } from '../../components/PageHeading'
+import { appVersion } from '../../app/version'
+import {
+  formatBytes,
+  readStorageState,
+  requestPersistence,
+} from '../../pwa/storage'
+import type { StorageState } from '../../pwa/storage'
 const themeLabels = {
   'comic-pop': 'Comic Pop',
   sakura: 'Sakura',
@@ -24,6 +31,16 @@ export function SettingsScreen() {
   // the task ignores a change that arrives before the previous one is stored.
   const { error, run } = useTask()
   const [local, setLocal] = useState<Profile | null>(null)
+  const [storage, setStorage] = useState<StorageState | null>(null)
+  useEffect(() => {
+    let active = true
+    void readStorageState().then((state) => {
+      if (active) setStorage(state)
+    })
+    return () => {
+      active = false
+    }
+  }, [])
   if (profile === null) return null
   const selected = local?.revision === profile.revision ? local : profile
   function change(
@@ -156,36 +173,39 @@ export function SettingsScreen() {
             dados ou rastreamento. Limpar os dados do navegador remove suas
             listas; guarde um backup em um lugar seguro.
           </p>
-          <CartoonButton
-            variant="quiet"
-            onClick={() => {
-              if (
-                !('storage' in navigator) ||
-                !('persist' in navigator.storage)
-              ) {
-                show(
-                  'Este navegador não oferece proteção de armazenamento. Mantenha um backup.',
-                )
-                return
-              }
-              void navigator.storage.persist().then(
-                (persistent) => {
+          {storage && (
+            <p className="muted" style={{ fontSize: 14 }}>
+              {storage.usage !== null &&
+                `O Cartoon Check ocupa ${formatBytes(storage.usage)} neste dispositivo, contando o próprio aplicativo. `}
+              {storage.persistence === 'persisted'
+                ? 'O navegador protege estes dados da limpeza automática.'
+                : storage.persistence === 'best-effort'
+                  ? 'O navegador pode liberar este espaço se o dispositivo ficar cheio.'
+                  : 'Este navegador não informa o armazenamento.'}
+            </p>
+          )}
+          {storage?.persistence !== 'persisted' && (
+            <CartoonButton
+              variant="quiet"
+              onClick={() => {
+                void requestPersistence().then(async (persistence) => {
+                  setStorage(await readStorageState())
                   show(
-                    persistent
-                      ? 'Armazenamento persistente autorizado.'
-                      : 'Este navegador pode liberar espaço. Mantenha um backup dos seus dados.',
+                    persistence === 'persisted'
+                      ? 'Armazenamento protegido neste navegador.'
+                      : persistence === 'best-effort'
+                        ? 'Este navegador ainda pode liberar espaço. Mantenha um backup dos seus dados.'
+                        : 'Este navegador não oferece proteção de armazenamento. Mantenha um backup.',
                   )
-                },
-                () => {
-                  show(
-                    'Este navegador não autorizou armazenamento persistente. Mantenha um backup.',
-                  )
-                },
-              )
-            }}
-          >
-            Proteger armazenamento local
-          </CartoonButton>
+                })
+              }}
+            >
+              Proteger armazenamento local
+            </CartoonButton>
+          )}
+          <p className="muted" style={{ fontSize: 14, margin: '16px 0 0' }}>
+            Versão {appVersion}
+          </p>
         </div>
         {error && (
           <p className="error" role="alert">

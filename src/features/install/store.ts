@@ -48,6 +48,9 @@ export async function requestInstall() {
   await event.prompt()
   await event.userChoice
 }
+export function isStandalone() {
+  return installed
+}
 export function isIos() {
   return (
     /iPad|iPhone|iPod/.test(navigator.userAgent) ||

@@ -11,6 +11,7 @@ import { useFormDraft } from '../../hooks/useFormDraft'
 import { DiscardDialog } from '../../components/DiscardDialog'
 import { DraftConflict } from '../../pwa/DraftConflict'
 import { discardDraft, initialDraftField } from '../../pwa/drafts'
+import { requestPersistence } from '../../pwa/storage'
 
 export function ListEditor({
   list: sourceList = null,
@@ -111,7 +112,10 @@ export function ListEditor({
               (result) => {
                 discardDraft(scope)
                 close()
-                if (!list) onCreated?.(result.id)
+                if (list) return
+                // With a list worth keeping, ask the browser not to evict the data.
+                void requestPersistence()
+                onCreated?.(result.id)
               },
             )
           }}

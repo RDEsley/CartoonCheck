@@ -9,6 +9,8 @@ import { Wordmark } from '../components/BrandArt'
 import { CartoonButton } from '../components/CartoonButton'
 import { BottomSheet } from '../components/BottomSheet'
 import { downloadDraft, draftIsSafe } from '../pwa/drafts'
+import { requestPersistence } from '../pwa/storage'
+import { isStandalone } from '../features/install/store'
 
 export function RuntimeProvider({ children }: { children: ReactNode }) {
   const [context, setContext] = useState<CommandContext | null>(null)
@@ -119,9 +121,22 @@ function ReadyRuntime({
   const reducedMotion =
     useReducedMotion() === true || profile?.reduceMotion === true
   useEffect(() => {
-    document.documentElement.dataset.theme = profile?.themeId ?? 'comic-pop'
-    document.documentElement.dataset.reducedMotion = String(reducedMotion)
+    const root = document.documentElement
+    root.dataset.theme = profile?.themeId ?? 'comic-pop'
+    root.dataset.reducedMotion = String(reducedMotion)
+    // The browser chrome follows the theme that was just applied.
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute(
+        'content',
+        getComputedStyle(root).getPropertyValue('--background').trim(),
+      )
   }, [profile?.themeId, reducedMotion])
+  const hasProfile = profile !== null
+  useEffect(() => {
+    // An installed app is the strongest sign that the data should be kept.
+    if (hasProfile && isStandalone()) void requestPersistence()
+  }, [hasProfile])
   if (profiles === undefined)
     return (
       <main className="recovery" role="status">
