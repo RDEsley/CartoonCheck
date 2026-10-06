@@ -110,7 +110,7 @@
   text-decoration: none;
   transition: transform var(--normal);
 }
-.listCard:hover {
+:global(:root:not([data-reduced-motion='true'])) .listCard:hover {
   transform: translateY(-2px);
 }
 .listCard h2 {

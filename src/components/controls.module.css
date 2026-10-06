@@ -1,5 +1,15 @@
 .button {
   display: inline-flex;
+  min-height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 13px 16px 12px 15px;
+  background: none;
+  color: inherit;
+}
+.face {
+  flex: 1;
+  display: inline-flex;
   justify-content: center;
   align-items: center;
   gap: 9px;
@@ -7,37 +17,43 @@
   padding: 12px 20px;
   font-weight: 800;
   border: 2px solid var(--ink);
-  border-radius: 13px 16px 12px 15px;
+  border-radius: inherit;
   box-shadow: 3px 4px 0 var(--ink);
   transition:
     transform var(--quick),
     box-shadow var(--quick);
-  text-decoration: none;
 }
-.primary {
+.primary .face {
   background: var(--accent);
   color: var(--on-accent);
 }
-.secondary {
+.secondary .face {
   background: var(--secondary);
   color: var(--on-accent);
 }
-.quiet {
+.quiet .face {
   background: var(--surface);
   color: var(--text);
 }
-.danger {
+.danger .face {
   background: var(--surface);
   color: var(--danger);
 }
-.button:active:not(:disabled) {
-  transform: translateY(3px) scale(1.015, 0.96);
+.button:active:not(:disabled, [aria-disabled='true']) .face {
   box-shadow: 1px 1px 0 var(--ink);
 }
+/* Squash and displacement are motion: they stay off when motion is reduced. */
 @media (hover: hover) {
-  .button:hover:not(:disabled) {
+  :global(:root:not([data-reduced-motion='true']))
+    .button:hover:not(:disabled, [aria-disabled='true'])
+    .face {
     transform: translateY(-1px);
   }
+}
+:global(:root:not([data-reduced-motion='true']))
+  .button:active:not(:disabled, [aria-disabled='true'])
+  .face {
+  transform: translateY(2px) scale(1.025, 0.95);
 }
 .checkbox,
 .iconButton {
@@ -51,7 +67,7 @@
   padding: 4px;
   border-radius: 12px;
 }
-.checkbox:active {
+:global(:root:not([data-reduced-motion='true'])) .checkbox:active svg {
   transform: scale(1.06, 0.91);
 }
 .checkStroke {

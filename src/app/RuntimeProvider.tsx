@@ -1,7 +1,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { MotionConfig } from 'motion/react'
+import { MotionConfig, useReducedMotion } from 'motion/react'
 import type { CommandContext } from '../db/context'
 import { database, initializeRuntime, subscribeDatabase } from './runtime'
 import { RuntimeContext } from './context'
@@ -115,12 +115,13 @@ function ReadyRuntime({
   const profiles = useLiveQuery(() => database.profile.toArray(), [])
   const meta = useLiveQuery(() => database.meta.get('app'), [])
   const profile = profiles?.[0] ?? null
+  // Motion is reduced when either the system or the local preference asks for it.
+  const reducedMotion =
+    useReducedMotion() === true || profile?.reduceMotion === true
   useEffect(() => {
     document.documentElement.dataset.theme = profile?.themeId ?? 'comic-pop'
-    document.documentElement.dataset.reducedMotion = String(
-      profile?.reduceMotion ?? false,
-    )
-  }, [profile?.themeId, profile?.reduceMotion])
+    document.documentElement.dataset.reducedMotion = String(reducedMotion)
+  }, [profile?.themeId, reducedMotion])
   if (profiles === undefined)
     return (
       <main className="recovery" role="status">

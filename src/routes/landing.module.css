@@ -81,8 +81,10 @@
   min-height: 52px;
 }
 .open:active {
-  transform: translateY(3px);
   box-shadow: 1px 1px 0 var(--ink);
+}
+:global(:root:not([data-reduced-motion='true'])) .open:active {
+  transform: translateY(2px);
 }
 .small {
   font-size: 13px;

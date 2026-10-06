@@ -32,11 +32,8 @@ export class CelebrationEngine {
     options: CelebrationOptions,
     onComplete: () => void,
   ) {
-    if (
-      options.haptics &&
-      !options.reduced &&
-      typeof navigator.vibrate === 'function'
-    )
+    // Haptics have their own preference; reducing motion does not silence them.
+    if (options.haptics && typeof navigator.vibrate === 'function')
       navigator.vibrate(8)
     if (options.reduced) {
       if (complete) onComplete()
