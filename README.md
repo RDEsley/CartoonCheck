@@ -19,6 +19,7 @@ themes, backup and offline installation are not available yet.
 - Vite 8 and CSS Modules
 - ESLint with type-aware TypeScript and React rules
 - Vitest, React Testing Library and jsdom
+- Playwright for real-browser IndexedDB integration
 - Dexie for IndexedDB and Zod for data validation
 - GitHub Actions
 
@@ -50,6 +51,7 @@ execution policy blocks `npm.ps1`.
 | `npm run typecheck` | Check application and tooling types |
 | `npm test` | Run tests in watch mode |
 | `npm run test:run` | Run tests once |
+| `npm run test:e2e` | Run Chromium data integration tests |
 | `npm run build` | Typecheck and create a production build in `dist/` |
 | `npm run preview` | Preview the production build locally |
 
@@ -64,6 +66,7 @@ src/
   styles/       Global styles
   main.tsx      React bootstrap
 tests/
+  e2e/          Real-browser IndexedDB tests
   integration/  IndexedDB integration tests
   setup.ts      DOM matchers and test cleanup
   vitest.d.ts   Typed DOM assertions for Vitest
@@ -94,9 +97,25 @@ Vitest covers validation, UUID generation, database lifecycle, profile/list/item
 commands, persistence, history, concurrency and rollback. Integration tests use
 fake-indexeddb in Node; the DOM environment is ready for component tests.
 
+The Chromium suite checks real IndexedDB persistence across page reopening,
+concurrent purchases in two tabs, transaction rollback and stale dataset
+rejection. It loads the data modules through Vite and uses a mobile viewport.
+These are data integration tests; the shopping interface and PWA flows will be
+covered when those features are available.
+
 CI runs lint, tests, typechecking and the production build. Application, tooling
 and test code are checked with strict TypeScript settings. An empty test suite
 fails the checks.
+
+Install the browser before running the Chromium suite locally:
+
+```sh
+npx playwright install chromium
+npm run test:e2e
+```
+
+Playwright starts its own development server when one is not already running
+on port 4173. CI installs Chromium and runs the browser suite after the build.
 
 To validate the current implementation:
 
