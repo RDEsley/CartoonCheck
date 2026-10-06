@@ -15,6 +15,6 @@ export class DataError extends Error {
     message: string,
   ) {
     super(message)
-    this.name = 'DataError'
+    this.name = 'CartoonCheckDataError'
   }
 }

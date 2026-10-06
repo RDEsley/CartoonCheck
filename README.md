@@ -7,11 +7,11 @@ cartoon interactions. The interface is in Brazilian Portuguese.
 
 ## Status
 
-The project foundation and initial data contracts are ready: React, strict
-TypeScript, Vite, IndexedDB schema, validation and continuous integration.
+The foundation and data layer are ready: strict TypeScript, IndexedDB schema,
+validated profile/list/item commands, indexed queries and transactional history.
 
-Shopping lists, IndexedDB persistence, animated checkboxes, themes, backup and
-offline installation are planned. These features are not available yet.
+The interface is still the initial shell. Shopping screens, animated checkboxes,
+themes, backup and offline installation are not available yet.
 
 ## Stack
 
@@ -59,6 +59,7 @@ execution policy blocks `npm.ps1`.
 src/
   app/          Application entry and initial shell
   db/           Data contracts, schema and connection lifecycle
+  features/     Profile, list, item and history services
   lib/          Shared utilities
   styles/       Global styles
   main.tsx      React bootstrap
@@ -68,19 +69,36 @@ tests/
   vitest.d.ts   Typed DOM assertions for Vitest
 ```
 
-Feature modules will be added as their behavior is implemented.
+## Local-first data layer
+
+IndexedDB is the source of truth, accessed through Dexie. The database starts at
+schema version 1, with UUID keys and separate stores for profile, lists, items,
+images, history and dataset metadata. Counts and progress are derived from items.
+
+Commands validate input with Zod and commit related writes in one transaction.
+A failed history write rolls back the associated action. Purchasing an already
+purchased item is a no-op, and only buying the last pending item records a list
+completion. Deleting the last pending item does not count as completion.
+
+Edits use revisions to reject obsolete forms. Commands also check the dataset
+identity, preventing an old session from writing to replaced data. A database
+newer than the application is rejected without deletion or downgrade.
+
+Prices are optional totals per item, stored as integer minor units. Price writes
+carry their expected currency, and changing a list currency is blocked while
+prices exist. Quantity does not multiply the price.
 
 ## Testing and checks
 
-Vitest covers data validation, UUID generation, IndexedDB initialization and
-connection compatibility. Database integration tests use fake-indexeddb in a
-Node environment; the DOM environment is ready for component tests.
+Vitest covers validation, UUID generation, database lifecycle, profile/list/item
+commands, persistence, history, concurrency and rollback. Integration tests use
+fake-indexeddb in Node; the DOM environment is ready for component tests.
 
 CI runs lint, tests, typechecking and the production build. Application, tooling
 and test code are checked with strict TypeScript settings. An empty test suite
 fails the checks.
 
-To validate the current foundation:
+To validate the current implementation:
 
 ```sh
 npm run lint

@@ -157,6 +157,7 @@ export const updateListSchema = z.strictObject({
 
 export const createItemSchema = z.strictObject({
   name: inputName,
+  expectedCurrency: currency.optional(),
   quantity: quantity.default(1),
   plannedPriceMinor: price.default(null),
   paidPriceMinor: price.default(null),
@@ -167,6 +168,7 @@ export const createItemSchema = z.strictObject({
 
 export const updateItemSchema = z.strictObject({
   name: inputName,
+  expectedCurrency: currency.optional(),
   quantity,
   plannedPriceMinor: price,
   paidPriceMinor: price,
@@ -174,7 +176,8 @@ export const updateItemSchema = z.strictObject({
   store,
   link,
 }).partial()
-  .refine((input) => Object.keys(input).length > 0, 'Provide at least one change.')
+  .refine((input) => Object.keys(input).some((key) => key !== 'expectedCurrency'),
+    'Provide at least one change.')
 
 export type Profile = z.infer<typeof profileSchema>
 export type ShoppingList = z.infer<typeof listSchema>
