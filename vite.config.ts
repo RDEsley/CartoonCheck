@@ -14,8 +14,48 @@ if (
 )
   throw new Error('package.json has no version.')
 
+// The preview server sends the security headers of the hosting configuration,
+// so the production tests run under the real content security policy.
+function hostingHeaders() {
+  const hosting: unknown = JSON.parse(
+    readFileSync(new URL('./vercel.json', import.meta.url), 'utf8'),
+  )
+  const rules: unknown[] =
+    typeof hosting === 'object' &&
+    hosting !== null &&
+    'headers' in hosting &&
+    Array.isArray(hosting.headers)
+      ? hosting.headers
+      : []
+  const headers: Record<string, string> = {}
+  for (const rule of rules) {
+    if (
+      typeof rule !== 'object' ||
+      rule === null ||
+      !('source' in rule) ||
+      rule.source !== '/(.*)' ||
+      !('headers' in rule) ||
+      !Array.isArray(rule.headers)
+    )
+      continue
+    const entries: unknown[] = rule.headers
+    for (const entry of entries)
+      if (
+        typeof entry === 'object' &&
+        entry !== null &&
+        'key' in entry &&
+        'value' in entry &&
+        typeof entry.key === 'string' &&
+        typeof entry.value === 'string'
+      )
+        headers[entry.key] = entry.value
+  }
+  return headers
+}
+
 export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(manifest.version) },
+  preview: { headers: hostingHeaders() },
   build: {
     rolldownOptions: {
       output: {

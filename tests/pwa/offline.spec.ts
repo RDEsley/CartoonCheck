@@ -7,7 +7,16 @@ test('works offline after precaching, including previously unopened backup and r
   page.on('pageerror', (error) => {
     errors.push(error.message)
   })
-  await page.goto('/app')
+  // The preview server applies the hosting headers; nothing the app does may
+  // be refused by its content security policy.
+  page.on('console', (message) => {
+    if (/Content Security Policy/i.test(message.text()))
+      errors.push(message.text())
+  })
+  const response = await page.goto('/app')
+  expect(response?.headers()['content-security-policy']).toContain(
+    "default-src 'self'",
+  )
   await page.getByLabel('Seu nome').fill('Richard')
   await page.getByRole('button', { name: 'Vamos começar' }).click()
   await expect(
