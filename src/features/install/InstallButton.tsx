@@ -21,7 +21,8 @@ export function InstallButton() {
     <>
       <CartoonButton
         variant="quiet"
-        disabled={state.installed || pending}
+        disabled={state.installed}
+        busy={pending}
         onClick={() => {
           if (state.available) void run(requestInstall)
           else setInstructions(true)

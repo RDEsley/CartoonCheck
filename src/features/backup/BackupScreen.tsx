@@ -39,7 +39,7 @@ export function BackupScreen() {
             e não é protegido por senha.
           </p>
           <CartoonButton
-            disabled={pending}
+            busy={pending}
             onClick={() => {
               void run(
                 async () => exportBackup(await snapshotBackup(db)),
@@ -68,7 +68,6 @@ export function BackupScreen() {
             <input
               type="file"
               accept=".zip,application/zip"
-              disabled={pending}
               onChange={(event) => {
                 const file = event.target.files?.[0]
                 if (!file) return

@@ -20,7 +20,9 @@ const themeLabels = {
 export function SettingsScreen() {
   const { profile, db, context } = useRuntime()
   const { show } = useFeedback()
-  const { pending, error, run } = useTask()
+  // Controls stay enabled while saving so keyboard focus is not dropped;
+  // the task ignores a change that arrives before the previous one is stored.
+  const { error, run } = useTask()
   const [local, setLocal] = useState<Profile | null>(null)
   if (profile === null) return null
   const selected = local?.revision === profile.revision ? local : profile
@@ -74,7 +76,6 @@ export function SettingsScreen() {
                 name="theme"
                 aria-label={themeLabels[theme]}
                 checked={selected.themeId === theme}
-                disabled={pending}
                 onChange={() => {
                   void run(
                     () =>
@@ -115,7 +116,6 @@ export function SettingsScreen() {
             <input
               type="checkbox"
               checked={selected.reduceMotion}
-              disabled={pending}
               onChange={(event) => {
                 change({ reduceMotion: event.target.checked })
               }}
@@ -129,7 +129,6 @@ export function SettingsScreen() {
             <input
               type="checkbox"
               checked={selected.hapticsEnabled}
-              disabled={pending}
               onChange={(event) => {
                 change({ hapticsEnabled: event.target.checked })
               }}
