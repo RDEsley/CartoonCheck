@@ -62,6 +62,7 @@ export function InstallButton() {
                 {profile && (
                   <Link
                     to="/app/settings/backup"
+                    className="text-link"
                     onClick={() => {
                       setInstructions(false)
                     }}

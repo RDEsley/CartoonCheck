@@ -201,7 +201,7 @@
   flex-wrap: wrap;
 }
 .footer a {
-  min-height: 44px;
+  min-height: 48px;
   display: flex;
   align-items: center;
 }

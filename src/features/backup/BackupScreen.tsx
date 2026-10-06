@@ -101,7 +101,7 @@ export function BackupScreen() {
         )}
         <Link
           to={profile ? '/app/settings' : '/onboarding'}
-          style={{ minHeight: 48 }}
+          className="text-link"
         >
           {profile ? 'Voltar aos ajustes' : 'Voltar ao primeiro uso'}
         </Link>

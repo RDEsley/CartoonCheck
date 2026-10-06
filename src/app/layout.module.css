@@ -13,6 +13,9 @@
   border-bottom: 2px solid var(--ink);
 }
 .header a {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
   text-decoration: none;
 }
 .localBadge {

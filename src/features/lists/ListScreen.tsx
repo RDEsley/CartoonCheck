@@ -42,7 +42,9 @@ export function ListScreen() {
         title="Esta lista não está aqui."
         description="Ela pode ter sido excluída em outra aba."
       >
-        <Link to="/app">Voltar às listas</Link>
+        <Link to="/app" className="text-link">
+          Voltar às listas
+        </Link>
       </EmptyState>
     )
   const { list, pendingCount, purchasedCount, progress } = summary

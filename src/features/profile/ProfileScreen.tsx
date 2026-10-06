@@ -195,7 +195,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
         >
           Salvar perfil
         </CartoonButton>
-        <Link to="/app/settings" style={{ minHeight: 48 }}>
+        <Link to="/app/settings" className="text-link">
           Voltar aos ajustes
         </Link>
       </form>

@@ -61,7 +61,9 @@ export function App() {
                     <main className={styles.onboarding}>
                       <Wordmark />
                       <h1>Este caminho ainda não está pronto.</h1>
-                      <Link to="/app">Voltar para suas listas</Link>
+                      <Link to="/app" className="text-link">
+                        Voltar para suas listas
+                      </Link>
                     </main>
                   }
                 />

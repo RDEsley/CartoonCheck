@@ -124,7 +124,9 @@ export function Onboarding() {
       <p className="muted" style={{ marginTop: 28, fontSize: 14 }}>
         Sem conta. Seus dados ficam neste dispositivo.
       </p>
-      <Link to="/restore">Já tenho um backup</Link>
+      <Link to="/restore" className="text-link">
+        Já tenho um backup
+      </Link>
     </main>
   )
 }
