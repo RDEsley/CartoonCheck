@@ -1,4 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks'
+import { useState } from 'react'
+import { useNavigate } from 'react-router'
+import { Plus } from 'lucide-react'
+import { CartoonButton } from '../../components/CartoonButton'
+import { ListEditor } from './ListEditor'
 import { useRuntime } from '../../app/context'
 import { BrandArt } from '../../components/BrandArt'
 import { EmptyState } from '../../components/EmptyState'
@@ -6,6 +11,8 @@ import { ListCard } from './ListCard'
 import { getListIds } from './queries'
 import styles from '../../app/layout.module.css'
 export function Home({ archived = false }: { archived?: boolean }) {
+  const [creating, setCreating] = useState(false)
+  const navigate = useNavigate()
   const { db, profile } = useRuntime()
   const ids = useLiveQuery(
     () => getListIds(db, archived ? 'archived' : 'active'),
@@ -53,6 +60,27 @@ export function Home({ archived = false }: { archived?: boolean }) {
             <ListCard key={id} id={id} />
           ))}
         </div>
+      )}
+      {!archived && (
+        <CartoonButton
+          style={{ width: '100%', marginTop: 28 }}
+          onClick={() => {
+            setCreating(true)
+          }}
+        >
+          <Plus size={22} />
+          Nova lista
+        </CartoonButton>
+      )}
+      {creating && (
+        <ListEditor
+          close={() => {
+            setCreating(false)
+          }}
+          onCreated={(id) => {
+            void navigate(`/app/lists/${id}`)
+          }}
+        />
       )}
     </>
   )

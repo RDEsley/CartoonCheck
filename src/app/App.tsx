@@ -4,6 +4,7 @@ import { ErrorBoundary } from './ErrorBoundary'
 import { AppShell } from './AppShell'
 import { Onboarding } from '../features/profile/Onboarding'
 import { Home } from '../features/lists/Home'
+import { ListScreen } from '../features/lists/ListScreen'
 import { Wordmark, BrandArt } from '../components/BrandArt'
 import styles from './layout.module.css'
 
@@ -35,6 +36,7 @@ export function App() {
             <Route path="/app" element={<AppShell />}>
               <Route index element={<Home />} />
               <Route path="archived" element={<Home archived />} />
+              <Route path="lists/:listId" element={<ListScreen />} />
             </Route>
             <Route
               path="*"
