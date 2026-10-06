@@ -96,6 +96,7 @@ export function ListEditor({
         <label>
           Nome da lista
           <input
+            data-autofocus
             value={name}
             onChange={(event) => {
               setName(event.target.value)

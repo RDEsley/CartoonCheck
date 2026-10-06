@@ -1,6 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { useRef } from 'react'
 import styles from './controls.module.css'
 export function BottomSheet({
   open,
@@ -19,11 +20,26 @@ export function BottomSheet({
   dismissible?: boolean
   alert?: boolean
 }) {
+  const content = useRef<HTMLDivElement>(null)
+  const returnFocus = useRef<HTMLElement | null>(null)
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className={styles.overlay} />
         <Dialog.Content
+          ref={content}
+          onOpenAutoFocus={(event) => {
+            returnFocus.current =
+              document.activeElement instanceof HTMLElement
+                ? document.activeElement
+                : null
+            const input =
+              content.current?.querySelector<HTMLElement>('[data-autofocus]')
+            if (input) {
+              event.preventDefault()
+              input.focus()
+            }
+          }}
           role={alert ? 'alertdialog' : 'dialog'}
           onEscapeKeyDown={(event) => {
             if (!dismissible) event.preventDefault()
@@ -34,7 +50,20 @@ export function BottomSheet({
           className={styles.sheet}
           onCloseAutoFocus={(event) => {
             event.preventDefault()
-            document.getElementById('page-title')?.focus()
+            const previous = returnFocus.current
+            if (
+              previous !== null &&
+              previous !== document.body &&
+              previous.isConnected &&
+              !previous.matches(':disabled')
+            )
+              previous.focus()
+            // A sheet that closed together with this one may already have placed focus.
+            else if (
+              document.activeElement === null ||
+              document.activeElement === document.body
+            )
+              document.getElementById('page-title')?.focus()
           }}
         >
           <div className={styles.sheetHeading}>

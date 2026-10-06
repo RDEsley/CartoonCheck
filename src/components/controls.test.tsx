@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { expect, it, vi } from 'vitest'
 import { CartoonCheckbox } from './CartoonCheckbox'
 import { BottomSheet } from './BottomSheet'
@@ -54,4 +55,42 @@ it('names the sheet and closes with Escape', async () => {
   expect(screen.getByRole('dialog', { name: 'Nova lista' })).toBeInTheDocument()
   await user.keyboard('{Escape}')
   expect(close).toHaveBeenCalledWith(false)
+})
+it('focuses the marked field and returns focus to the trigger when the sheet closes', async () => {
+  const user = userEvent.setup()
+  function Example() {
+    const [open, setOpen] = useState(false)
+    return (
+      <>
+        <button
+          onClick={() => {
+            setOpen(true)
+          }}
+        >
+          Abrir
+        </button>
+        {open && (
+          <BottomSheet
+            open
+            onOpenChange={setOpen}
+            title="Nova lista"
+            description="Uma lista do seu jeito."
+          >
+            <button>Antes do campo</button>
+            <label>
+              Nome
+              <input data-autofocus />
+            </label>
+          </BottomSheet>
+        )}
+      </>
+    )
+  }
+  render(<Example />)
+  await user.click(screen.getByRole('button', { name: 'Abrir' }))
+  expect(screen.getByLabelText('Nome')).toHaveFocus()
+  await user.keyboard('{Escape}')
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: 'Abrir' })).toHaveFocus()
+  })
 })

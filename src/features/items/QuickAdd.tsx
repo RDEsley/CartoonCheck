@@ -64,6 +64,7 @@ export function QuickAdd({
           Nome do item
           <input
             ref={input}
+            data-autofocus
             value={name}
             onChange={(event) => {
               setName(event.target.value)

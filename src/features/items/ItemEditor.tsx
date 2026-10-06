@@ -142,6 +142,7 @@ export function ItemEditor({
         <label>
           Nome
           <input
+            data-autofocus
             value={name}
             onChange={(event) => {
               setName(event.target.value)
