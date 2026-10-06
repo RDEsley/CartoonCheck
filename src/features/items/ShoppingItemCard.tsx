@@ -10,16 +10,21 @@ import type { ShoppingItem } from '../../db/models'
 import { setPurchased } from './commands'
 import styles from './items.module.css'
 import { useFeedback } from '../../app/feedback-context'
+import { StoredImage } from '../../components/StoredImage'
+import { formatPrice } from '../../lib/money'
+import type { ShoppingList } from '../../db/models'
 export function ShoppingItemCard({
   id,
   archived,
   edit,
   changed,
+  currency,
 }: {
   id: string
   archived: boolean
   edit: (item: ShoppingItem) => void
   changed: (notice: string) => void
+  currency: ShoppingList['currency']
 }) {
   const { db, context } = useRuntime()
   const { show } = useFeedback()
@@ -75,6 +80,7 @@ export function ShoppingItemCard({
           )
         }}
       />
+      {item.photoId && <StoredImage id={item.photoId} />}
       <button
         className={styles.itemName}
         onClick={() => {
@@ -83,6 +89,15 @@ export function ShoppingItemCard({
         disabled={archived}
       >
         <span>{item.name}</span>
+        {(purchased ? item.paidPriceMinor : item.plannedPriceMinor) !==
+          null && (
+          <small className="muted">
+            {formatPrice(
+              (purchased ? item.paidPriceMinor : item.plannedPriceMinor) ?? 0,
+              currency,
+            )}
+          </small>
+        )}
         {item.quantity > 1 && (
           <small className="muted">Quantidade: {item.quantity}</small>
         )}

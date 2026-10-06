@@ -6,6 +6,7 @@ import { currencies } from '../../db/models'
 import type { ShoppingList } from '../../db/models'
 import { useTask } from '../../hooks/useTask'
 import { createList, updateList } from './commands'
+import { canonicalRate } from '../../lib/money'
 
 export function ListEditor({
   list = null,
@@ -23,6 +24,10 @@ export function ListEditor({
     list?.currency ?? 'BRL',
   )
   const { pending, error, run } = useTask()
+  const [secondary, setSecondary] = useState<ShoppingList['secondaryCurrency']>(
+    list?.secondaryCurrency ?? null,
+  )
+  const [rate, setRate] = useState(list?.manualExchangeRate ?? '')
   return (
     <BottomSheet
       open
@@ -36,7 +41,13 @@ export function ListEditor({
         className="stack"
         onSubmit={(event) => {
           event.preventDefault()
-          const fields = { name, emoji: emoji.trim() || null, currency }
+          const fields = {
+            name,
+            emoji: emoji.trim() || null,
+            currency,
+            secondaryCurrency: secondary,
+            manualExchangeRate: secondary ? canonicalRate(rate) : null,
+          }
           void run(
             () =>
               list
@@ -89,7 +100,7 @@ export function ListEditor({
         <label>
           Moeda
           <select
-          aria-label="Moeda"
+            aria-label="Moeda"
             value={currency}
             onChange={(event) => {
               const value = currencies.find(
@@ -103,6 +114,50 @@ export function ListEditor({
             ))}
           </select>
         </label>
+        <details>
+          <summary style={{ minHeight: 48, cursor: 'pointer' }}>
+            Cotação manual (opcional)
+          </summary>
+          <div className="stack" style={{ paddingTop: 12 }}>
+            <label>
+              Moeda secundária
+              <select
+                aria-label="Moeda secundária"
+                value={secondary ?? ''}
+                onChange={(event) => {
+                  setSecondary(
+                    currencies.find((value) => value === event.target.value) ??
+                      null,
+                  )
+                }}
+              >
+                <option value="">Não mostrar conversão</option>
+                {currencies
+                  .filter((value) => value !== currency)
+                  .map((value) => (
+                    <option key={value}>{value}</option>
+                  ))}
+              </select>
+            </label>
+            {secondary && (
+              <label>
+                1 {currency} vale quantos {secondary}?
+                <input
+                  inputMode="decimal"
+                  value={rate}
+                  onChange={(event) => {
+                    setRate(event.target.value)
+                  }}
+                  required
+                />
+              </label>
+            )}
+            <p className="muted">
+              Você define a cotação. A conversão é uma referência; não
+              consultamos taxas na internet.
+            </p>
+          </div>
+        </details>
         {error && (
           <p className="error" role="alert">
             {error}

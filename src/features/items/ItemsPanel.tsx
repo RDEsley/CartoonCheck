@@ -91,6 +91,7 @@ export function ItemsPanel({ list }: { list: ShoppingList }) {
               <ShoppingItemCard
                 key={id}
                 id={id}
+                currency={list.currency}
                 archived={list.status === 'archived'}
                 edit={setEditing}
                 changed={setNotice}
@@ -127,6 +128,7 @@ export function ItemsPanel({ list }: { list: ShoppingList }) {
       {editing && (
         <ItemEditor
           item={editing}
+          list={list}
           close={() => {
             setEditing(null)
           }}

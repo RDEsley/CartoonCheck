@@ -3,7 +3,7 @@ import { assertDatabaseReady, assertDataset, assertRevision, updatedTime } from 
 import type { CommandContext } from '../../db/context'
 import { DataError } from '../../db/errors'
 import { appendHistory } from '../../db/history'
-import { createItemSchema, itemSchema, updateItemSchema } from '../../db/models'
+import { createItemSchema, imageAssetSchema, itemSchema, updateItemSchema } from '../../db/models'
 import type { CreateItemInput, ImageAsset, ShoppingItem, ShoppingList, UpdateItemInput } from '../../db/models'
 import { requireItem, requireList, touchList } from '../../db/records'
 import { createId } from '../../lib/create-id'
@@ -63,10 +63,12 @@ export async function updateItem(
   id: string,
   input: UpdateItemInput,
   expectedRevision: number,
+  photo?: ImageAsset | null,
 ): Promise<ShoppingItem> {
   const { expectedCurrency, ...fields } = updateItemSchema.parse(input)
+  const asset = photo === undefined || photo === null ? photo : imageAssetSchema.parse(photo)
   assertDatabaseReady(db)
-  return db.transaction('rw', [db.meta, db.lists, db.items], async () => {
+  return db.transaction('rw', [db.meta, db.lists, db.items, db.assets], async () => {
     await assertDataset(db, context)
     const current = await requireItem(db, id)
     const list = await requireList(db, current.listId, true)
@@ -74,8 +76,12 @@ export async function updateItem(
     assertPricingCurrency(list, fields, expectedCurrency)
     const time = updatedTime(current.updatedAt, list.updatedAt)
     const item = itemSchema.parse({
-      ...current, ...fields, updatedAt: time, revision: current.revision + 1,
+      ...current, ...fields, ...(asset === undefined ? {} : { photoId: asset?.id ?? null }), updatedAt: time, revision: current.revision + 1,
     })
+    if (asset !== undefined) {
+      if (asset !== null) await db.assets.add(asset)
+      if (current.photoId !== null) await db.assets.delete(current.photoId)
+    }
     await db.items.put(item)
     await touchList(db, list, time)
     return item

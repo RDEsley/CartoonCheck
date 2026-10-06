@@ -23,6 +23,7 @@ import styles from '../../app/layout.module.css'
 import { ItemsPanel } from '../items/ItemsPanel'
 import { motion } from 'motion/react'
 import { springs } from '../../animations/tokens'
+import { ListTotals } from './ListTotals'
 
 export function ListScreen() {
   const { listId = '' } = useParams()
@@ -90,6 +91,7 @@ export function ListScreen() {
         </CartoonButton>
       </div>
       <ProgressMeter value={progress} />
+      <ListTotals list={list} />
       <ItemsPanel key={list.id} list={list} />
       {menu && (
         <BottomSheet
