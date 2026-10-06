@@ -17,10 +17,10 @@
   --quick: 100ms;
   --normal: 180ms;
   --playful: 280ms;
+  --z-celebration: 30;
+  --z-toast: 35;
   --z-overlay: 40;
   --z-dialog: 50;
-  --z-toast: 60;
-  --z-celebration: 70;
 }
 [data-theme='sakura'] {
   --background: #fff5f0;

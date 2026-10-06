@@ -17,7 +17,7 @@
   border-radius: 16px 18px 14px 17px;
   box-shadow: 2px 3px 0 var(--ink);
   pointer-events: none;
-  z-index: 30;
+  z-index: var(--z-celebration);
   font-size: 18px;
   font-weight: 800;
   overflow: hidden;

@@ -11,6 +11,25 @@ import { CartoonButton } from '../components/CartoonButton'
 import styles from './feedback.module.css'
 import { celebrations } from '../celebrations/engine'
 const repeatMarker = String.fromCharCode(0xa0)
+// Reserves room below the page content so the bar never hides the last row.
+function reserveSpace(element: HTMLElement | null) {
+  if (element === null) return
+  const root = document.documentElement
+  const update = () => {
+    root.style.setProperty(
+      '--toast-space',
+      `${String(element.offsetHeight + 16)}px`,
+    )
+  }
+  update()
+  const observer =
+    typeof ResizeObserver === 'function' ? new ResizeObserver(update) : null
+  observer?.observe(element)
+  return () => {
+    observer?.disconnect()
+    root.style.removeProperty('--toast-space')
+  }
+}
 interface Toast {
   message: string
   action?: UndoAction
@@ -52,7 +71,11 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
         {announcement}
       </p>
       {toast && (
-        <aside className={styles.toast} aria-label="Última ação">
+        <aside
+          ref={reserveSpace}
+          className={styles.toast}
+          aria-label="Última ação"
+        >
           <p>{toast.message}</p>
           {toast.note && <p className={styles.note}>{toast.note}</p>}
           <div className="row">
