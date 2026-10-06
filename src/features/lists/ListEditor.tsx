@@ -89,6 +89,7 @@ export function ListEditor({
         <label>
           Moeda
           <select
+          aria-label="Moeda"
             value={currency}
             onChange={(event) => {
               const value = currencies.find(
