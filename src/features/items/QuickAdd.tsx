@@ -68,6 +68,7 @@ export function QuickAdd({
             value={name}
             onChange={(event) => {
               setName(event.target.value)
+              setNotice('')
             }}
             onKeyDown={(event) => {
               if (event.key === 'Enter' && event.nativeEvent.isComposing)

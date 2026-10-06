@@ -17,13 +17,11 @@ export function ShoppingItemCard({
   id,
   archived,
   edit,
-  changed,
   currency,
 }: {
   id: string
   archived: boolean
   edit: (item: ShoppingItem) => void
-  changed: (notice: string) => void
   currency: ShoppingList['currency']
 }) {
   const { db, context } = useRuntime()
@@ -58,14 +56,6 @@ export function ShoppingItemCard({
                   kind: 'purchase',
                   result,
                 })
-              if (result.changed)
-                changed(
-                  purchased
-                    ? 'Compra desfeita.'
-                    : result.listCompleted
-                      ? 'Lista completa! 🎉 Você conseguiu tudo.'
-                      : 'Comprado! ✨',
-                )
               requestAnimationFrame(() => {
                 const target =
                   document.querySelector<HTMLButtonElement>(

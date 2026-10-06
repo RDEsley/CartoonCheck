@@ -102,7 +102,6 @@ export function ItemsPanel({ list }: { list: ShoppingList }) {
                 currency={list.currency}
                 archived={list.status === 'archived'}
                 edit={setEditing}
-                changed={setNotice}
               />
             ))}
           </ul>

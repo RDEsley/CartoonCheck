@@ -17,6 +17,10 @@
   font-size: 14px;
   font-weight: 800;
 }
+.toast .note {
+  font-weight: 600;
+  color: var(--muted);
+}
 .toast .close {
   margin-left: auto;
   min-width: 48px;

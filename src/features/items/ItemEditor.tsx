@@ -291,7 +291,6 @@ export function ItemEditor({
                 discardDraft(scope)
                 celebrations.cancel()
                 close()
-                changed('Item removido.')
                 show('Item removido.', { kind: 'delete', snapshot })
               },
             )
