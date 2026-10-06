@@ -5,7 +5,7 @@ import {
   archiveList, createList, deleteList, reactivateList, undoArchiveChange, updateList,
 } from '../../src/features/lists/commands'
 import { addItem, deleteItem, setPurchased, updateItem } from '../../src/features/items/commands'
-import { getListIds, getListSummary } from '../../src/features/lists/queries'
+import { getListIds, getListSummary, listProgress } from '../../src/features/lists/queries'
 import { getHistoryPage } from '../../src/features/history/queries'
 
 describe('shopping list commands', () => {
@@ -52,6 +52,15 @@ describe('shopping list commands', () => {
       .rejects.toMatchObject({ code: 'CONFLICT' })
     expect(await db.lists.get(list.id)).toEqual(renamed)
     expect(await getHistoryPage(db)).toMatchObject([{ listName: 'Japão' }])
+  })
+
+  it('shows full or empty progress only when the counts say so', () => {
+    expect(listProgress(0, 0)).toBeNull()
+    expect(listProgress(0, 3)).toBe(0)
+    expect(listProgress(1, 3)).toBe(33)
+    expect(listProgress(199, 200)).toBe(99)
+    expect(listProgress(1, 500)).toBe(1)
+    expect(listProgress(200, 200)).toBe(100)
   })
 
   it('undoes archiving and reactivation only while the list is unchanged', async () => {

@@ -10,6 +10,14 @@ export interface ListSummary {
   progress: number | null
 }
 
+/** A percentage that only reaches 100 when nothing is pending and 0 when nothing was bought. */
+export function listProgress(purchasedCount: number, total: number): number | null {
+  if (total === 0) return null
+  if (purchasedCount >= total) return 100
+  if (purchasedCount <= 0) return 0
+  return Math.min(99, Math.max(1, Math.round(purchasedCount / total * 100)))
+}
+
 export async function getListIds(db: CartoonCheckDatabase, status: ShoppingList['status'] = 'active') {
   assertDatabaseReady(db)
   return db.lists.where('[status+updatedAt]')
@@ -30,7 +38,6 @@ export async function getListSummary(
         .between([id, 'pending', Dexie.minKey], [id, 'pending', Dexie.maxKey]).count(),
     ])
     const purchasedCount = total - pendingCount
-    return { list, pendingCount, purchasedCount,
-      progress: total === 0 ? null : Math.round(purchasedCount / total * 100) }
+    return { list, pendingCount, purchasedCount, progress: listProgress(purchasedCount, total) }
   })
 }

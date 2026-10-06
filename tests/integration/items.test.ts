@@ -169,6 +169,23 @@ describe('shopping item commands', () => {
     expect(await db.history.filter((entry) => entry.action === 'list_completed').count()).toBe(0)
   })
 
+  it('records the completion after the purchase that caused it', async () => {
+    const { db, context } = await shoppingDatabase()
+    const list = await createList(db, context, { name: 'Japão' })
+    const first = await addItem(db, context, list.id, { name: 'KitKat' })
+    const second = await addItem(db, context, list.id, { name: 'Mochila' })
+    expect(second.createdAt).toBeGreaterThan(first.createdAt)
+    await setPurchased(db, context, first.id, true)
+    const result = await setPurchased(db, context, second.id, true)
+    expect(result.listCompleted).toBe(true)
+    const history = await getHistoryPage(db, 0, list.id)
+    expect(history.slice(0, 2).map((entry) => entry.action)).toEqual(['list_completed', 'item_purchased'])
+    expect(new Set(history.map((entry) => entry.occurredAt)).size).toBe(history.length)
+    const undone = await setPurchased(db, context, second.id, false)
+    expect((await getHistoryPage(db, 0, list.id))[0]).toMatchObject({ action: 'item_purchase_undone' })
+    expect(undone.item.updatedAt).toBeGreaterThan(result.item.updatedAt)
+  })
+
   it('allows a real new completion after the list has been reopened by addition', async () => {
     const { db, context } = await shoppingDatabase()
     const list = await createList(db, context, { name: 'Japão' })

@@ -35,6 +35,10 @@ export function assertRevision(current: number, expected: number): void {
   }
 }
 
+/**
+ * The time of a change, always after the given previous ones. Order by time
+ * stays stable when two changes share a millisecond or the clock steps back.
+ */
 export function updatedTime(...previousTimes: number[]): number {
-  return Math.max(Date.now(), ...previousTimes)
+  return Math.max(Date.now(), ...previousTimes.map((time) => time + 1))
 }

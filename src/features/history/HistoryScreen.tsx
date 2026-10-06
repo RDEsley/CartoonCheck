@@ -4,7 +4,7 @@ import { useRuntime } from '../../app/context'
 import { EmptyState } from '../../components/EmptyState'
 import { CartoonButton } from '../../components/CartoonButton'
 import type { HistoryEntry } from '../../db/models'
-import { getHistoryPage } from './queries'
+import { getHistoryCount, getHistoryPage } from './queries'
 import { PageHeading } from '../../components/PageHeading'
 import styles from '../../app/layout.module.css'
 const labels: Record<HistoryEntry['action'], string> = {
@@ -19,16 +19,29 @@ const labels: Record<HistoryEntry['action'], string> = {
   item_removed: 'Item removido',
   item_restored: 'Item restaurado',
 }
-const dateFormat = new Intl.DateTimeFormat('pt-BR', {
+const time = { hour: '2-digit', minute: '2-digit' } as const
+const thisYear = new Intl.DateTimeFormat('pt-BR', {
   day: '2-digit',
   month: 'short',
-  hour: '2-digit',
-  minute: '2-digit',
+  ...time,
 })
+const otherYears = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+  ...time,
+})
+function formatDate(occurredAt: number) {
+  const sameYear =
+    new Date(occurredAt).getFullYear() === new Date().getFullYear()
+  return (sameYear ? thisYear : otherYears).format(occurredAt)
+}
 export function HistoryScreen() {
   const { db } = useRuntime()
   const [page, setPage] = useState(0)
   const entries = useLiveQuery(() => getHistoryPage(db, page), [db, page])
+  const total = useLiveQuery(() => getHistoryCount(db), [db])
+  const hasOlder = total !== undefined && (page + 1) * 50 < total
   return (
     <>
       <div className={styles.heading}>
@@ -40,7 +53,7 @@ export function HistoryScreen() {
       </div>
       {entries === undefined ? (
         <p role="status">Abrindo histórico…</p>
-      ) : entries.length === 0 ? (
+      ) : entries.length === 0 && page === 0 ? (
         <EmptyState
           title="O primeiro check está por vir."
           description="Suas listas e compras contam essa história."
@@ -56,7 +69,7 @@ export function HistoryScreen() {
               <small className="muted">
                 {entry.itemName !== null && `${entry.listName} · `}
                 <time dateTime={new Date(entry.occurredAt).toISOString()}>
-                  {dateFormat.format(entry.occurredAt)}
+                  {formatDate(entry.occurredAt)}
                 </time>
               </small>
             </li>
@@ -75,7 +88,7 @@ export function HistoryScreen() {
         </CartoonButton>
         <CartoonButton
           variant="quiet"
-          disabled={entries === undefined || entries.length < 50}
+          disabled={!hasOlder}
           onClick={() => {
             setPage((value) => value + 1)
           }}

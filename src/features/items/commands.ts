@@ -113,14 +113,16 @@ export async function setPurchased(
       updatedAt: time, revision: current.revision + 1,
     })
     await db.items.put(item)
-    await touchList(db, list, time)
     const history = await appendHistory(db,
       purchased ? 'item_purchased' : 'item_purchase_undone', list, time, item)
     const listCompleted = purchased
       && await db.items.where('[listId+status+createdAt]')
         .between([list.id, 'pending', 0], [list.id, 'pending', Number.MAX_SAFE_INTEGER], true, true)
         .count() === 0
-    if (listCompleted) await appendHistory(db, 'list_completed', list, time)
+    // The completion is recorded after the purchase that caused it, so history reads in order.
+    const completedAt = time + 1
+    if (listCompleted) await appendHistory(db, 'list_completed', list, completedAt)
+    await touchList(db, list, listCompleted ? completedAt : time)
     return { item, changed: true, listCompleted, operationId: history.id, previousPurchase }
   })
 }
