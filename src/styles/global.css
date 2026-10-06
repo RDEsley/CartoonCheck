@@ -26,6 +26,8 @@
 body {
   min-width: 320px;
   margin: 0;
+  /* Names typed by the user may be one long unbroken word. */
+  overflow-wrap: break-word;
 }
 button,
 input,
@@ -112,6 +114,7 @@ small {
 }
 .stack {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
 }
 .row {
