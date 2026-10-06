@@ -1,22 +1,54 @@
-import styles from './App.module.css'
+import { BrowserRouter, Routes, Route, Link } from 'react-router'
+import { RuntimeProvider } from './RuntimeProvider'
+import { ErrorBoundary } from './ErrorBoundary'
+import { AppShell } from './AppShell'
+import { Onboarding } from '../features/profile/Onboarding'
+import { Home } from '../features/lists/Home'
+import { Wordmark, BrandArt } from '../components/BrandArt'
+import styles from './layout.module.css'
 
 export function App() {
   return (
-    <main className={styles.page}>
-      <div className={styles.introduction}>
-        <p className={styles.wordmark}>Cartoon Check</p>
-        <h1 className={styles.title}>
-          Adicione.
-          <br />
-          Marque.
-          <br />
-          Comemore.
-        </h1>
-        <p className={styles.description}>
-          Uma forma simples e divertida de lembrar o que você quer comprar.
-        </p>
-        <p className={styles.status}>Em desenvolvimento</p>
-      </div>
-    </main>
+    <ErrorBoundary>
+      <RuntimeProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <main className={styles.onboarding}>
+                  <Wordmark />
+                  <h1>
+                    Adicione.
+                    <br />
+                    Marque.
+                    <br />
+                    Comemore.
+                  </h1>
+                  <BrandArt size={140} />
+                  <p>Suas compras, com um pequeno toque de desenho animado.</p>
+                  <Link to="/app">Abrir Cartoon Check →</Link>
+                </main>
+              }
+            />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/app" element={<AppShell />}>
+              <Route index element={<Home />} />
+              <Route path="archived" element={<Home archived />} />
+            </Route>
+            <Route
+              path="*"
+              element={
+                <main className={styles.onboarding}>
+                  <Wordmark />
+                  <h1>Este caminho ainda não está pronto.</h1>
+                  <Link to="/app">Voltar para suas listas</Link>
+                </main>
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      </RuntimeProvider>
+    </ErrorBoundary>
   )
 }

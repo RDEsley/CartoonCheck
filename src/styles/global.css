@@ -113,6 +113,13 @@ svg {
   color: var(--danger);
   font-weight: 700;
 }
+.recovery {
+  max-width: 540px;
+  margin: 64px auto;
+  padding: 24px;
+  display: grid;
+  gap: 24px;
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
