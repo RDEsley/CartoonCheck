@@ -35,8 +35,7 @@ jobs:
         run: npm run lint
 
       - name: Run tests
-        # Allow an empty suite during the foundation milestone only.
-        run: npm run test:run -- --passWithNoTests
+        run: npm run test:run
 
       - name: Typecheck
         run: npm run typecheck

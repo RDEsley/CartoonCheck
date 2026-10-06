@@ -7,8 +7,8 @@ cartoon interactions. The interface is in Brazilian Portuguese.
 
 ## Status
 
-The project foundation is ready: React, strict TypeScript, Vite, linting, test
-tooling and continuous integration.
+The project foundation and initial data contracts are ready: React, strict
+TypeScript, Vite, IndexedDB schema, validation and continuous integration.
 
 Shopping lists, IndexedDB persistence, animated checkboxes, themes, backup and
 offline installation are planned. These features are not available yet.
@@ -19,6 +19,7 @@ offline installation are planned. These features are not available yet.
 - Vite 8 and CSS Modules
 - ESLint with type-aware TypeScript and React rules
 - Vitest, React Testing Library and jsdom
+- Dexie for IndexedDB and Zod for data validation
 - GitHub Actions
 
 Dependencies are pinned and the lockfile is committed. The TypeScript version
@@ -57,9 +58,12 @@ execution policy blocks `npm.ps1`.
 ```text
 src/
   app/          Application entry and initial shell
+  db/           Data contracts, schema and connection lifecycle
+  lib/          Shared utilities
   styles/       Global styles
   main.tsx      React bootstrap
 tests/
+  integration/  IndexedDB integration tests
   setup.ts      DOM matchers and test cleanup
   vitest.d.ts   Typed DOM assertions for Vitest
 ```
@@ -68,18 +72,19 @@ Feature modules will be added as their behavior is implemented.
 
 ## Testing and checks
 
-There are no product tests at this milestone. The test runner is configured for
-DOM tests, with explicit cleanup and reset of mocks between tests.
+Vitest covers data validation, UUID generation, IndexedDB initialization and
+connection compatibility. Database integration tests use fake-indexeddb in a
+Node environment; the DOM environment is ready for component tests.
 
-CI runs lint, tests, typechecking and the production build. It temporarily allows
-an empty test suite during the foundation milestone. Once domain behavior is
-introduced, that exception will be removed.
+CI runs lint, tests, typechecking and the production build. Application, tooling
+and test code are checked with strict TypeScript settings. An empty test suite
+fails the checks.
 
 To validate the current foundation:
 
 ```sh
 npm run lint
-npm run test:run -- --passWithNoTests
+npm run test:run
 npm run typecheck
 npm run build
 ```
