@@ -12,6 +12,7 @@ import { compressImage } from './images'
 import { errorMessage } from '../../lib/error-message'
 import { editPrice, parsePrice } from '../../lib/money'
 import { parseLink } from '../../lib/link'
+import { ItemLink } from './ItemDetails'
 import { BlobImage, StoredImage } from '../../components/StoredImage'
 import { celebrations } from '../../celebrations/engine'
 import { useFormDraft } from '../../hooks/useFormDraft'
@@ -322,6 +323,7 @@ export function ItemEditor({
               {...described('link')}
             />
           </label>
+          {item.link !== null && <ItemLink link={item.link} />}
           <CartoonButton
             type="submit"
             disabled={pending || processing || !name.trim()}

@@ -19,6 +19,7 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
       await expect(page.locator('.purchase-ghost, .celebration-canvas')).toHaveCount(0)
     }
     await expect(page.getByRole('status').filter({ hasText: 'Lista completa!' }).first()).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Nada pendente por aqui.' })).toBeVisible()
     await expect(page.locator('.purchase-ghost, .celebration-canvas')).toHaveCount(0, { timeout: 3000 })
     await page.reload()
     await expect(page.getByRole('tab', { name: 'Comprei' })).toBeVisible()

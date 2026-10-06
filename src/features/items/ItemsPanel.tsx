@@ -9,9 +9,16 @@ import { getItemIds } from './queries'
 import { ShoppingItemCard } from './ShoppingItemCard'
 import { QuickAdd } from './QuickAdd'
 import { ItemEditor } from './ItemEditor'
+import { ItemDetails } from './ItemDetails'
 import styles from './items.module.css'
 import { useSearchParams } from 'react-router'
-export function ItemsPanel({ list }: { list: ShoppingList }) {
+export function ItemsPanel({
+  list,
+  purchasedCount,
+}: {
+  list: ShoppingList
+  purchasedCount: number
+}) {
   const { db } = useRuntime()
   const [search, setSearch] = useSearchParams()
   const requestedId = search.get('itemEdit')
@@ -24,6 +31,11 @@ export function ItemsPanel({ list }: { list: ShoppingList }) {
   const [editing, setEditing] = useState<ShoppingItem | null>(null)
   const editedItem = editing ?? requestedItem ?? null
   const tabs = useRef<HTMLDivElement>(null)
+  const closeItem = () => {
+    setEditing(null)
+    search.delete('itemEdit')
+    setSearch(search, { replace: true })
+  }
   const ids = useLiveQuery(
     () => getItemIds(db, list.id, tab),
     [db, list.id, tab],
@@ -82,14 +94,18 @@ export function ItemsPanel({ list }: { list: ShoppingList }) {
         ) : ids.length === 0 ? (
           <EmptyState
             title={
-              tab === 'pending'
-                ? 'Nada aqui ainda.'
-                : 'Ainda não rolou nenhum check ✨'
+              tab === 'purchased'
+                ? 'Ainda não rolou nenhum check ✨'
+                : purchasedCount > 0
+                  ? 'Nada pendente por aqui.'
+                  : 'Nada aqui ainda.'
             }
             description={
-              tab === 'pending'
-                ? 'Vamos colocar alguma coisa nessa lista?'
-                : 'Quando você comprar, o item vem para cá.'
+              tab === 'purchased'
+                ? 'Quando você comprar, o item vem para cá.'
+                : purchasedCount > 0
+                  ? 'Adicione algo quando quiser.'
+                  : 'Vamos colocar alguma coisa nessa lista?'
             }
           />
         ) : (
@@ -131,15 +147,14 @@ export function ItemsPanel({ list }: { list: ShoppingList }) {
           }}
         />
       )}
-      {editedItem && (
-        <ItemEditor
+      {editedItem && list.status === 'active' && (
+        <ItemEditor item={editedItem} list={list} close={closeItem} />
+      )}
+      {editedItem && list.status === 'archived' && (
+        <ItemDetails
           item={editedItem}
-          list={list}
-          close={() => {
-            setEditing(null)
-            search.delete('itemEdit')
-            setSearch(search, { replace: true })
-          }}
+          currency={list.currency}
+          close={closeItem}
         />
       )}
     </>

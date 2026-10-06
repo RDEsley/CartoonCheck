@@ -96,7 +96,7 @@ export function ListScreen() {
       </div>
       <ProgressMeter value={progress} />
       <ListTotals list={list} />
-      <ItemsPanel key={list.id} list={list} />
+      <ItemsPanel key={list.id} list={list} purchasedCount={purchasedCount} />
       {menu && (
         <BottomSheet
           open
@@ -182,7 +182,13 @@ export function ListScreen() {
           }}
           title="Excluir esta lista?"
           alert
-          description={`“${deleting.name}” e todos os seus itens serão excluídos. Esta ação não pode ser desfeita.`}
+          description={`“${deleting.name}” ${
+            pendingCount + purchasedCount === 0
+              ? 'será excluída'
+              : pendingCount + purchasedCount === 1
+                ? 'e seu item, com a foto se houver, serão excluídos'
+                : `e seus ${String(pendingCount + purchasedCount)} itens, com as fotos, serão excluídos`
+          }. Esta ação não pode ser desfeita.`}
         >
           <div className="stack">
             <CartoonButton

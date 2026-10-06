@@ -90,7 +90,6 @@ export function ShoppingItemCard({
         onClick={() => {
           edit(item)
         }}
-        disabled={archived}
       >
         <span>{item.name}</span>
         {(purchased ? item.paidPriceMinor : item.plannedPriceMinor) !==

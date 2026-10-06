@@ -58,6 +58,19 @@
 .itemName small {
   font-weight: 600;
 }
+.details {
+  display: grid;
+  gap: 16px;
+  margin: 20px 0 0;
+}
+.details dt {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--muted);
+}
+.details dd {
+  margin: 4px 0 0;
+}
 .item[data-purchased='true'] .itemName span {
   text-decoration: line-through;
   text-decoration-thickness: 2px;
