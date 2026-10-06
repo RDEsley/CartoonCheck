@@ -8,6 +8,8 @@ import { ListScreen } from '../features/lists/ListScreen'
 import { FeedbackProvider } from './FeedbackProvider'
 import { HistoryScreen } from '../features/history/HistoryScreen'
 import { CelebrationProvider } from '../celebrations/CelebrationProvider'
+import { SettingsScreen } from '../features/settings/SettingsScreen'
+import { ProfileScreen } from '../features/profile/ProfileScreen'
 import { Wordmark, BrandArt } from '../components/BrandArt'
 import styles from './layout.module.css'
 
@@ -45,6 +47,8 @@ export function App() {
                   <Route path="archived" element={<Home archived />} />
                   <Route path="lists/:listId" element={<ListScreen />} />
                   <Route path="history" element={<HistoryScreen />} />
+                  <Route path="settings" element={<SettingsScreen />} />
+                  <Route path="settings/profile" element={<ProfileScreen />} />
                 </Route>
                 <Route
                   path="*"

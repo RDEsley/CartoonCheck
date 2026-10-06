@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 import { Plus } from 'lucide-react'
 import { CartoonButton } from '../../components/CartoonButton'
 import { ListEditor } from './ListEditor'
+import { StoredImage } from '../../components/StoredImage'
 import { useRuntime } from '../../app/context'
 import { BrandArt } from '../../components/BrandArt'
 import { EmptyState } from '../../components/EmptyState'
@@ -34,7 +35,11 @@ export function Home({ archived = false }: { archived?: boolean }) {
               : 'O que vamos comprar hoje?'}
           </p>
         </div>
-        <BrandArt kind={profile?.avatarPresetId ?? 'bag'} size={72} />
+        {profile?.photoId ? (
+          <StoredImage id={profile.photoId} size={72} />
+        ) : (
+          <BrandArt kind={profile?.avatarPresetId ?? 'bag'} size={72} />
+        )}
       </div>
       {!archived && (
         <h2 style={{ fontSize: 20, marginBottom: 24 }}>Suas listas</h2>
