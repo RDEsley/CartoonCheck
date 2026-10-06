@@ -1,10 +1,12 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { useLocation } from 'react-router'
 import { useReducedMotion } from 'motion/react'
 import { useRuntime } from '../app/context'
 import { useFeedback } from '../app/feedback-context'
+import { getItemIds } from '../features/items/queries'
 import { CelebrationContext } from './context'
+import type { Celebrations } from './context'
 import { celebrations as engine } from './engine'
 import '../styles/celebrations.css'
 export function CelebrationProvider({ children }: { children: ReactNode }) {
@@ -12,6 +14,11 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
   const { show } = useFeedback()
   const reduced = useReducedMotion() === true || profile?.reduceMotion === true
   const location = useLocation()
+  // The context value stays stable so item cards do not re-render with it.
+  const latest = useRef({ db, show, reduced, profile })
+  useEffect(() => {
+    latest.current = { db, show, reduced, profile }
+  })
   useEffect(() => {
     const cancel = () => {
       if (document.hidden) engine.cancel()
@@ -33,51 +40,50 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
     },
     [location.pathname, reduced, profile?.themeId],
   )
-  return (
-    <CelebrationContext.Provider
-      value={{
-        cancel: () => {
+  const value = useMemo<Celebrations>(
+    () => ({
+      cancel: () => {
+        engine.cancel()
+      },
+      purchase: (result, rect) => {
+        if (!result.changed || result.item.status !== 'purchased') {
           engine.cancel()
-        },
-        purchase: (result, rect) => {
-          if (!result.changed || result.item.status !== 'purchased') {
-            engine.cancel()
-            return
-          }
-          engine.purchase(
-            result.item.name,
-            rect,
-            result.listCompleted,
-            {
-              reduced,
-              haptics: profile?.hapticsEnabled ?? false,
-              sakura: profile?.themeId === 'sakura',
-            },
-            () => {
-              const generation = engine.generation
-              void db.items
-                .where('listId')
-                .equals(result.item.listId)
-                .filter((item) => item.status === 'pending')
-                .count()
-                .then(
-                  (pending) => {
-                    if (!pending && generation === engine.generation)
-                      show('Lista completa! 🎉 Você conseguiu tudo.', {
-                        kind: 'purchase',
-                        result,
-                      })
-                    else engine.cancel()
-                  },
-                  () => {
-                    engine.cancel()
-                  },
-                )
-            },
-          )
-        },
-      }}
-    >
+          return
+        }
+        const current = latest.current
+        engine.purchase(
+          result.item.name,
+          rect,
+          {
+            reduced: current.reduced,
+            haptics: current.profile?.hapticsEnabled ?? false,
+            sakura: current.profile?.themeId === 'sakura',
+          },
+          result.listCompleted
+            ? {
+                confirm: async () =>
+                  (
+                    await getItemIds(
+                      current.db,
+                      result.item.listId,
+                      'pending',
+                    )
+                  ).length === 0,
+                celebrate: () => {
+                  current.show('Lista completa! 🎉 Você conseguiu tudo.', {
+                    kind: 'purchase',
+                    result,
+                  })
+                },
+              }
+            : undefined,
+        )
+      },
+    }),
+    [],
+  )
+  return (
+    <CelebrationContext.Provider value={value}>
       {children}
     </CelebrationContext.Provider>
   )

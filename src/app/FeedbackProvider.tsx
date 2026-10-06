@@ -117,6 +117,8 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
                 onClick={(event) => {
                   const action = toast.action
                   const viaKeyboard = event.detail === 0
+                  // A pending completion must not fire while the purchase is undone.
+                  celebrations.cancel()
                   if (action)
                     void run(
                       () => undoItemAction(db, context, action),

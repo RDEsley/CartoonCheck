@@ -74,19 +74,13 @@ export function Landing() {
                   setChecked(next)
                   const rect = card.current?.getBoundingClientRect()
                   if (next && rect)
-                    celebrations.purchase(
-                      'Um presente especial',
-                      rect,
-                      false,
-                      {
-                        reduced:
-                          systemReduced === true ||
-                          profile?.reduceMotion === true,
-                        haptics: false,
-                        sakura: profile?.themeId === 'sakura',
-                      },
-                      () => undefined,
-                    )
+                    celebrations.purchase('Um presente especial', rect, {
+                      reduced:
+                        systemReduced === true ||
+                        profile?.reduceMotion === true,
+                      haptics: false,
+                      sakura: profile?.themeId === 'sakura',
+                    })
                   else celebrations.cancel()
                 }}
               />

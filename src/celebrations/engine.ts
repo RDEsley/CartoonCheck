@@ -10,13 +10,20 @@ interface Particle {
   angle: number
   born: number
   life: number
-  petal: boolean
+  shape: 'strip' | 'circle' | 'star' | 'petal'
 }
 export interface CelebrationOptions {
   reduced: boolean
   haptics: boolean
   sakura: boolean
 }
+/** Present only when the purchase finished the list. */
+export interface Completion {
+  /** Re-reads the database: another change may have added a pending item. */
+  confirm: () => Promise<boolean>
+  celebrate: () => void
+}
+const shapes = ['strip', 'circle', 'star'] as const
 export class CelebrationEngine {
   generation = 0
   private canvas: HTMLCanvasElement | null = null
@@ -28,35 +35,47 @@ export class CelebrationEngine {
   purchase(
     name: string,
     rect: DOMRect,
-    complete: boolean,
     options: CelebrationOptions,
-    onComplete: () => void,
+    completion?: Completion,
   ) {
     // Haptics have their own preference; reducing motion does not silence them.
     if (options.haptics && typeof navigator.vibrate === 'function')
       navigator.vibrate(8)
-    if (options.reduced) {
-      if (complete) onComplete()
+    if (!options.reduced) this.ghost(name, rect)
+    if (completion === undefined) {
+      if (!options.reduced)
+        this.later(() => {
+          this.burst(
+            rect.left + 34,
+            rect.top + rect.height / 2,
+            false,
+            options.sakura,
+          )
+        }, 140)
       return
     }
-    this.ghost(name, rect)
-    if (complete)
-      this.later(() => {
-        this.burst(
-          window.innerWidth / 2,
-          Math.min(window.innerHeight / 3, 300),
-          true,
-          options.sakura,
-        )
-        onComplete()
-      }, 440)
-    else
-      this.burst(
-        rect.left + 34,
-        rect.top + rect.height / 2,
-        false,
-        options.sakura,
+    const finish = () => {
+      const generation = this.generation
+      void completion.confirm().then(
+        (confirmed) => {
+          // An undo, a new item or leaving the screen cancels the celebration.
+          if (!confirmed || generation !== this.generation) return
+          completion.celebrate()
+          if (options.reduced) return
+          // The final burst replaces the local bursts of recent purchases.
+          this.particles = []
+          this.burst(
+            window.innerWidth / 2,
+            Math.min(window.innerHeight / 3, 300),
+            true,
+            options.sakura,
+          )
+        },
+        () => undefined,
       )
+    }
+    if (options.reduced) finish()
+    else this.later(finish, 440)
   }
   cancel() {
     this.generation++
@@ -132,7 +151,7 @@ export class CelebrationEngine {
         angle,
         born: now,
         life: complete ? 1200 : 650,
-        petal: sakura,
+        shape: sakura ? 'petal' : (shapes[index % shapes.length] ?? 'strip'),
       })
     }
     if (this.canvas === null) {
@@ -170,25 +189,35 @@ export class CelebrationEngine {
         context.rotate(particle.angle + (now - particle.born) / 350)
         context.globalAlpha = 1 - (now - particle.born) / particle.life
         context.fillStyle = particle.color
-        if (particle.petal) {
-          context.beginPath()
-          context.ellipse(
-            0,
-            0,
-            particle.size,
-            particle.size * 0.55,
-            0.4,
-            0,
-            Math.PI * 2,
-          )
-          context.fill()
-        } else
+        if (particle.shape === 'strip')
           context.fillRect(
             -particle.size / 2,
             -particle.size / 2,
             particle.size,
             particle.size * 1.6,
           )
+        else {
+          context.beginPath()
+          if (particle.shape === 'petal')
+            context.ellipse(
+              0,
+              0,
+              particle.size,
+              particle.size * 0.55,
+              0.4,
+              0,
+              Math.PI * 2,
+            )
+          else if (particle.shape === 'circle')
+            context.arc(0, 0, particle.size * 0.6, 0, Math.PI * 2)
+          else
+            for (let point = 0; point < 10; point++) {
+              const radius = particle.size * (point % 2 ? 0.45 : 1)
+              const turn = (point * Math.PI) / 5
+              context.lineTo(Math.sin(turn) * radius, -Math.cos(turn) * radius)
+            }
+          context.fill()
+        }
         context.restore()
       }
       if (this.particles.length) this.draw(now)
