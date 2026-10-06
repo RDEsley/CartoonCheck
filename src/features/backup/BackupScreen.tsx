@@ -113,6 +113,7 @@ export function BackupScreen() {
             if (!open && !pending) setBackup(null)
           }}
           title="Restaurar estes dados?"
+          alert
           description="Tudo que está neste dispositivo será substituído. Não há como desfazer sem um backup anterior."
         >
           <div className="stack">

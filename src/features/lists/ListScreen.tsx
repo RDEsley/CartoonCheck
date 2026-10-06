@@ -171,6 +171,7 @@ export function ListScreen() {
             if (!open && !pending) setDeleting(null)
           }}
           title="Excluir esta lista?"
+          alert
           description={`“${deleting.name}” e todos os seus itens serão excluídos. Esta ação não pode ser desfeita.`}
         >
           <div className="stack">

@@ -40,7 +40,7 @@ test('exports and restores real photos and preserves current data when cancelled
   const path = await download.path()
   await page.getByLabel('Escolher arquivo de backup').setInputFiles(path)
   await expect(
-    page.getByRole('dialog', { name: 'Restaurar estes dados?' }),
+    page.getByRole('alertdialog', { name: 'Restaurar estes dados?' }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Cancelar restauração' }).click()
   await page
