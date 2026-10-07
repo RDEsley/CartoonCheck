@@ -65,7 +65,7 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
                   (await getItemIds(current.db, result.item.listId, 'pending'))
                     .length === 0,
                 celebrate: () => {
-                  current.show('Lista completa! 🎉 Você conseguiu tudo.', {
+                  current.show('Lista completa! 🎉', {
                     kind: 'purchase',
                     result,
                   })

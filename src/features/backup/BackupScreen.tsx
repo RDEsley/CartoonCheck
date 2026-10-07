@@ -4,6 +4,7 @@ import { Download, FolderUp } from 'lucide-react'
 import { useRuntime } from '../../app/context'
 import { useFeedback } from '../../app/feedback-context'
 import { CartoonButton } from '../../components/CartoonButton'
+import { FilePicker } from '../../components/FilePicker'
 import { BottomSheet } from '../../components/BottomSheet'
 import { useTask } from '../../hooks/useTask'
 import { replaceBackup, snapshotBackup } from './commands'
@@ -64,34 +65,27 @@ export function BackupScreen() {
             Primeiro verificamos o arquivo. A restauração substitui todos os
             dados atuais deste dispositivo; exporte uma cópia antes.
           </p>
-          <label>
-            <span className="row">
-              <FolderUp size={20} />
-              Escolher arquivo de backup
-            </span>
-            <input
-              type="file"
-              accept=".zip,application/zip"
-              onChange={(event) => {
-                const file = event.target.files?.[0]
-                // Clearing the field lets the same file be chosen again later.
-                event.target.value = ''
-                if (!file) return
-                setInvalid('')
-                setSaved(false)
-                void run(async () => {
-                  try {
-                    return await readBackup(file)
-                  } catch {
-                    setInvalid(
-                      'Este arquivo não é um backup válido do Cartoon Check. Seus dados atuais não foram alterados.',
-                    )
-                    throw new Error('Invalid backup')
-                  }
-                }, setBackup)
-              }}
-            />
-          </label>
+          <FilePicker
+            label="Escolher arquivo de backup"
+            accept=".zip,application/zip"
+            onPick={(file) => {
+              setInvalid('')
+              setSaved(false)
+              void run(async () => {
+                try {
+                  return await readBackup(file)
+                } catch {
+                  setInvalid(
+                    'Este arquivo não é um backup válido do Cartoon Check. Seus dados atuais não foram alterados.',
+                  )
+                  throw new Error('Invalid backup')
+                }
+              }, setBackup)
+            }}
+          >
+            <FolderUp size={20} />
+            Escolher arquivo de backup
+          </FilePicker>
         </div>
         {invalid ? (
           <p className="error" role="alert">

@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Trash2 } from 'lucide-react'
+import { Camera, Trash2 } from 'lucide-react'
 import { useRuntime } from '../../app/context'
 import type { ImageAsset, ShoppingItem, ShoppingList } from '../../db/models'
 import { currencies } from '../../db/models'
 import { BottomSheet } from '../../components/BottomSheet'
 import { CartoonButton } from '../../components/CartoonButton'
+import { FilePicker } from '../../components/FilePicker'
+import controls from '../../components/controls.module.css'
 import { useTask } from '../../hooks/useTask'
 import { deleteItem, updateItem } from './commands'
 import { useFeedback } from '../../app/feedback-context'
@@ -94,6 +96,7 @@ export function ItemEditor({
       ? ({ 'aria-invalid': true, 'aria-describedby': 'item-error' } as const)
       : {}
   const [leaving, setLeaving] = useState(false)
+  const hasPhoto = photo === undefined ? item.photoId !== null : photo !== null
   const { conflicted, dirty } = useFormDraft(
     scope,
     item.revision,
@@ -189,22 +192,19 @@ export function ItemEditor({
               required
             />
           </label>
-          <div className="row">
-            {photo ? (
-              <BlobImage blob={photo.blob} />
-            ) : photo === undefined && item.photoId ? (
-              <StoredImage id={item.photoId} size={80} />
-            ) : null}
-            <label style={{ flex: 1 }}>
-              Foto opcional
-              <input
-                type="file"
+          <div className="stack" style={{ gap: 8 }}>
+            <span style={{ fontWeight: 700 }}>Foto</span>
+            <div className="row">
+              {photo ? (
+                <BlobImage blob={photo.blob} />
+              ) : photo === undefined && item.photoId ? (
+                <StoredImage id={item.photoId} size={80} />
+              ) : null}
+              <FilePicker
+                label="Foto opcional"
                 accept="image/jpeg,image/png,image/webp"
-                onChange={(event) => {
-                  const file = event.target.files?.[0]
-                  // Clearing the field lets the same photo be chosen again later.
-                  event.target.value = ''
-                  if (!file || processing || pending) return
+                onPick={(file) => {
+                  if (processing || pending) return
                   setProcessing(true)
                   setPhotoError('')
                   void compressImage(file)
@@ -221,20 +221,26 @@ export function ItemEditor({
                       setProcessing(false)
                     })
                 }}
-              />
-            </label>
+              >
+                <Camera size={20} />
+                {processing
+                  ? 'Preparando…'
+                  : hasPhoto
+                    ? 'Trocar foto'
+                    : 'Escolher foto'}
+              </FilePicker>
+              {hasPhoto && (
+                <CartoonButton
+                  variant="quiet"
+                  onClick={() => {
+                    setPhoto(null)
+                  }}
+                >
+                  Remover foto
+                </CartoonButton>
+              )}
+            </div>
           </div>
-          {((photo !== undefined && photo !== null) ||
-            (photo === undefined && item.photoId !== null)) && (
-            <CartoonButton
-              variant="quiet"
-              onClick={() => {
-                setPhoto(null)
-              }}
-            >
-              Remover foto
-            </CartoonButton>
-          )}
           {photoError && (
             <p className="error" role="alert">
               {photoError}
@@ -325,12 +331,6 @@ export function ItemEditor({
           </label>
           {item.link !== null && <ItemLink link={item.link} />}
           <CartoonButton
-            type="submit"
-            disabled={pending || processing || !name.trim()}
-          >
-            Salvar item
-          </CartoonButton>
-          <CartoonButton
             variant="danger"
             disabled={pending || processing}
             onClick={() => {
@@ -348,11 +348,19 @@ export function ItemEditor({
             <Trash2 size={20} />
             Excluir item
           </CartoonButton>
-          {error && (
-            <p id="item-error" className="error" role="alert">
-              {error}
-            </p>
-          )}
+          <div className={controls.sheetFooter}>
+            {error && (
+              <p id="item-error" className="error" role="alert">
+                {error}
+              </p>
+            )}
+            <CartoonButton
+              type="submit"
+              disabled={pending || processing || !name.trim()}
+            >
+              Salvar item
+            </CartoonButton>
+          </div>
         </form>
       )}
       {leaving && (

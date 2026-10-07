@@ -6,7 +6,9 @@ import { avatarPresets } from '../../db/models'
 import type { ImageAsset, Profile } from '../../db/models'
 import { BrandArt } from '../../components/BrandArt'
 import { BlobImage, StoredImage } from '../../components/StoredImage'
+import { Camera } from 'lucide-react'
 import { CartoonButton } from '../../components/CartoonButton'
+import { FilePicker } from '../../components/FilePicker'
 import { useTask } from '../../hooks/useTask'
 import { compressImage } from '../items/images'
 import { errorMessage } from '../../lib/error-message'
@@ -148,34 +150,31 @@ function ProfileForm({ profile }: { profile: Profile }) {
             ) : photo === undefined && snapshot.photoId ? (
               <StoredImage id={snapshot.photoId} size={80} />
             ) : null}
-            <label style={{ flex: 1 }}>
-              Ou uma foto
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={(event) => {
-                  const file = event.target.files?.[0]
-                  // Clearing the field lets the same photo be chosen again later.
-                  event.target.value = ''
-                  if (!file || processing || pending) return
-                  setProcessing(true)
-                  setPhotoError('')
-                  void compressImage(file, true)
-                    .then(
-                      async (asset) => {
-                        await checkpointPhoto(scope, asset)
-                        setPhoto(asset)
-                      },
-                      (reason: unknown) => {
-                        setPhotoError(errorMessage(reason))
-                      },
-                    )
-                    .finally(() => {
-                      setProcessing(false)
-                    })
-                }}
-              />
-            </label>
+            <FilePicker
+              label="Ou uma foto"
+              accept="image/jpeg,image/png,image/webp"
+              onPick={(file) => {
+                if (processing || pending) return
+                setProcessing(true)
+                setPhotoError('')
+                void compressImage(file, true)
+                  .then(
+                    async (asset) => {
+                      await checkpointPhoto(scope, asset)
+                      setPhoto(asset)
+                    },
+                    (reason: unknown) => {
+                      setPhotoError(errorMessage(reason))
+                    },
+                  )
+                  .finally(() => {
+                    setProcessing(false)
+                  })
+              }}
+            >
+              <Camera size={20} />
+              {processing ? 'Preparando…' : 'Usar uma foto'}
+            </FilePicker>
           </div>
           {photoError && (
             <p className="error" role="alert">

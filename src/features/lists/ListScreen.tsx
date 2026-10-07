@@ -101,7 +101,14 @@ export function ListScreen() {
       </div>
       <ProgressMeter value={progress} />
       <ListTotals list={list} />
-      <ItemsPanel key={list.id} list={list} purchasedCount={purchasedCount} />
+      <ItemsPanel
+        key={list.id}
+        list={list}
+        purchasedCount={purchasedCount}
+        restart={() => {
+          setRestarting(true)
+        }}
+      />
       {menu && (
         <BottomSheet
           open

@@ -13,6 +13,7 @@ import { DraftConflict } from '../../pwa/DraftConflict'
 import { discardDraft, initialDraftField } from '../../pwa/drafts'
 import { requestPersistence } from '../../pwa/storage'
 import layout from '../../app/layout.module.css'
+import controls from '../../components/controls.module.css'
 
 // Suggestions for the most common kinds of list; any emoji can be typed instead.
 const listIcons = [
@@ -263,14 +264,16 @@ export function ListEditor({
               </p>
             </div>
           </details>
-          {error && (
-            <p id="list-error" className="error" role="alert">
-              {error}
-            </p>
-          )}
-          <CartoonButton type="submit" disabled={pending || !name.trim()}>
-            {pending ? 'Salvando…' : list ? 'Salvar lista' : 'Criar lista'}
-          </CartoonButton>
+          <div className={controls.sheetFooter}>
+            {error && (
+              <p id="list-error" className="error" role="alert">
+                {error}
+              </p>
+            )}
+            <CartoonButton type="submit" disabled={pending || !name.trim()}>
+              {pending ? 'Salvando…' : list ? 'Salvar lista' : 'Criar lista'}
+            </CartoonButton>
+          </div>
         </form>
       )}
       {leaving && (

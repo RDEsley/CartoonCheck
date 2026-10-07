@@ -12,7 +12,7 @@ export function EmptyState({
 }) {
   return (
     <div className={styles.empty}>
-      <BrandArt size={110} />
+      <BrandArt size={88} />
       <h2>{title}</h2>
       <p className="muted">{description}</p>
       {children}

@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Plus } from 'lucide-react'
+import { Plus, RotateCcw } from 'lucide-react'
 import { useRuntime } from '../../app/context'
 import type { ShoppingItem, ShoppingList } from '../../db/models'
 import { EmptyState } from '../../components/EmptyState'
@@ -19,9 +19,12 @@ const step = 60
 export function ItemsPanel({
   list,
   purchasedCount,
+  restart,
 }: {
   list: ShoppingList
   purchasedCount: number
+  /** Offered when everything was bought and the list can start over. */
+  restart: () => void
 }) {
   const { db } = useRuntime()
   const [search, setSearch] = useSearchParams()
@@ -131,7 +134,16 @@ export function ItemsPanel({
                   ? 'Adicione algo quando quiser.'
                   : 'Vamos colocar alguma coisa nessa lista?'
             }
-          />
+          >
+            {tab === 'pending' &&
+              purchasedCount > 0 &&
+              list.status === 'active' && (
+                <CartoonButton variant="quiet" onClick={restart}>
+                  <RotateCcw size={20} />
+                  Recomeçar lista
+                </CartoonButton>
+              )}
+          </EmptyState>
         ) : (
           <ul className={styles.items} data-item-list>
             {ids.slice(0, shown).map((id) => (
