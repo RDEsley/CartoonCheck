@@ -15,6 +15,7 @@ import styles from '../../app/layout.module.css'
 import { useFormDraft } from '../../hooks/useFormDraft'
 import { DraftConflict } from '../../pwa/DraftConflict'
 import { PageHeading } from '../../components/PageHeading'
+import { avatarLabels } from './avatars'
 import {
   checkpointPhoto,
   discardDraft,
@@ -126,15 +127,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
                   type="radio"
                   className="sr-only"
                   name="avatar"
-                  aria-label={
-                    {
-                      bag: 'Sacola',
-                      star: 'Estrela',
-                      gift: 'Presente',
-                      leaf: 'Folha',
-                      planet: 'Planeta',
-                    }[preset]
-                  }
+                  aria-label={avatarLabels[preset]}
                   checked={
                     avatar === preset &&
                     (photo === null ||

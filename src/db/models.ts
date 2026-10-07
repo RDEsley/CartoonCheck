@@ -1,8 +1,25 @@
 import { z } from 'zod'
 
 export const currencies = ['BRL', 'JPY', 'USD', 'EUR'] as const
-export const themes = ['comic-pop', 'sakura', 'night-cartoon'] as const
-export const avatarPresets = ['bag', 'star', 'gift', 'leaf', 'planet'] as const
+export const themes = [
+  'comic-pop',
+  'sakura',
+  'night-cartoon',
+  'candy',
+  'doodle',
+  'space',
+] as const
+export const avatarPresets = [
+  'bag',
+  'star',
+  'gift',
+  'leaf',
+  'planet',
+  'heart',
+  'flower',
+  'rocket',
+  'cloud',
+] as const
 
 const id = z.uuid()
 const timestamp = z.number().int().nonnegative().max(8_640_000_000_000_000)

@@ -13,17 +13,13 @@ import styles from '../../app/layout.module.css'
 import settingsStyles from './settings.module.css'
 import { InstallButton } from '../install/InstallButton'
 import { PageHeading } from '../../components/PageHeading'
+import { themeArt, themeLabels } from './themes'
 import {
   formatBytes,
   readStorageState,
   requestPersistence,
 } from '../../pwa/storage'
 import type { StorageState } from '../../pwa/storage'
-const themeLabels = {
-  'comic-pop': 'Comic Pop',
-  sakura: 'Sakura',
-  'night-cartoon': 'Night Cartoon',
-}
 export function SettingsScreen() {
   const { profile, db, context } = useRuntime()
   const { show } = useFeedback()
@@ -115,16 +111,7 @@ export function SettingsScreen() {
                   })
                 }}
               />
-              <BrandArt
-                kind={
-                  theme === 'sakura'
-                    ? 'leaf'
-                    : theme === 'night-cartoon'
-                      ? 'planet'
-                      : 'star'
-                }
-                size={72}
-              />
+              <BrandArt kind={themeArt[theme]} size={72} />
               <strong>{themeLabels[theme]}</strong>
               <span className={settingsStyles.swatches}>
                 <i />

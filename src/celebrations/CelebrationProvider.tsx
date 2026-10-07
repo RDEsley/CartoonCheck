@@ -7,7 +7,7 @@ import { useFeedback } from '../app/feedback-context'
 import { getItemIds } from '../features/items/queries'
 import { CelebrationContext } from './context'
 import type { Celebrations } from './context'
-import { celebrations as engine } from './engine'
+import { celebrations as engine, themeShapes } from './engine'
 import '../styles/celebrations.css'
 export function CelebrationProvider({ children }: { children: ReactNode }) {
   const { profile, db } = useRuntime()
@@ -57,7 +57,7 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
           {
             reduced: current.reduced,
             haptics: current.profile?.hapticsEnabled ?? false,
-            sakura: current.profile?.themeId === 'sakura',
+            shapes: themeShapes(current.profile?.themeId),
           },
           result.listCompleted
             ? {

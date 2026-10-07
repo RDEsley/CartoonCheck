@@ -111,6 +111,103 @@ export function BrandArt({
           />
         </>
       )}
+      {kind === 'heart' && (
+        <>
+          <path
+            d="M50 85C17 62 13 39 26 27c10-9 22-4 24 7 2-11 14-16 24-7 13 12 9 35-24 58Z"
+            fill="var(--accent)"
+            stroke="var(--ink)"
+            strokeWidth="3.5"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M33 40c1-5 5-8 9-7"
+            stroke="var(--ink)"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
+        </>
+      )}
+      {kind === 'flower' && (
+        <>
+          {[
+            [50, 29],
+            [71, 45],
+            [63, 70],
+            [37, 70],
+            [29, 45],
+          ].map(([x, y]) => (
+            <circle
+              key={`${String(x)}-${String(y)}`}
+              cx={x}
+              cy={y}
+              r="14"
+              fill="var(--secondary)"
+              stroke="var(--ink)"
+              strokeWidth="3.5"
+            />
+          ))}
+          <circle
+            cx="50"
+            cy="52"
+            r="11"
+            fill="var(--accent)"
+            stroke="var(--ink)"
+            strokeWidth="3.5"
+          />
+        </>
+      )}
+      {kind === 'rocket' && (
+        <>
+          <path
+            d="M43 68c1 9 4 14 7 19 3-5 6-10 7-19Z"
+            fill="var(--accent)"
+            stroke="var(--ink)"
+            strokeWidth="3.5"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M36 58 23 73l14-3M64 58l13 15-14-3"
+            fill="var(--accent)"
+            stroke="var(--ink)"
+            strokeWidth="3.5"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M50 13c15 11 19 32 14 55H36c-5-23-1-44 14-55Z"
+            fill="var(--secondary)"
+            stroke="var(--ink)"
+            strokeWidth="3.5"
+            strokeLinejoin="round"
+          />
+          <circle
+            cx="50"
+            cy="40"
+            r="8"
+            fill="var(--surface)"
+            stroke="var(--ink)"
+            strokeWidth="3.5"
+          />
+        </>
+      )}
+      {kind === 'cloud' && (
+        <>
+          <path
+            d="M29 74c-12 0-19-8-17-18 2-8 9-12 17-10 2-13 15-19 26-15 9 3 14 11 14 19 10-1 18 5 18 13 0 8-6 11-14 11Z"
+            fill="var(--secondary)"
+            stroke="var(--ink)"
+            strokeWidth="3.5"
+            strokeLinejoin="round"
+          />
+          <path
+            d="m40 60 7 7 14-16"
+            stroke="var(--ink)"
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </>
+      )}
     </svg>
   )
 }

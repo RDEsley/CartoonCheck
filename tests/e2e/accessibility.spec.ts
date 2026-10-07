@@ -35,7 +35,14 @@ test('keeps the public and first-use screens accessible', async ({ page }) => {
   await page.goto('/caminho-que-nao-existe')
   await audit(page, 'not found')
 })
-for (const theme of ['Comic Pop', 'Sakura', 'Night Cartoon']) {
+for (const theme of [
+  'Comic Pop',
+  'Sakura',
+  'Night Cartoon',
+  'Candy',
+  'Doodle',
+  'Space',
+]) {
   test(`keeps every app screen and dialog accessible in ${theme}`, async ({
     page,
   }) => {

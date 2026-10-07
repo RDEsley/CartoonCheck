@@ -5,7 +5,7 @@ import { useSystemReducedMotion } from '../hooks/useSystemReducedMotion'
 import { Wordmark, BrandArt } from '../components/BrandArt'
 import { CartoonCheckbox } from '../components/CartoonCheckbox'
 import { InstallButton } from '../features/install/InstallButton'
-import { celebrations } from '../celebrations/engine'
+import { celebrations, themeShapes } from '../celebrations/engine'
 import { useRuntime } from '../app/context'
 import styles from './landing.module.css'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
@@ -77,7 +77,7 @@ export function Landing() {
                     celebrations.purchase('Um presente especial', rect, {
                       reduced: systemReduced || profile?.reduceMotion === true,
                       haptics: false,
-                      sakura: profile?.themeId === 'sakura',
+                      shapes: themeShapes(profile?.themeId),
                     })
                   else celebrations.cancel()
                 }}

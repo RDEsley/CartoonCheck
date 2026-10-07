@@ -11,6 +11,7 @@ import styles from '../../app/layout.module.css'
 import { useFormDraft } from '../../hooks/useFormDraft'
 import { discardDraft, initialDraftField } from '../../pwa/drafts'
 import { PageHeading } from '../../components/PageHeading'
+import { avatarLabels } from './avatars'
 export function Onboarding() {
   const { db, context, profile } = useRuntime()
   const navigate = useNavigate()
@@ -93,15 +94,7 @@ export function Onboarding() {
                 className="sr-only"
                 type="radio"
                 name="avatar"
-                aria-label={
-                  {
-                    bag: 'Sacola',
-                    star: 'Estrela',
-                    gift: 'Presente',
-                    leaf: 'Folha',
-                    planet: 'Planeta',
-                  }[preset]
-                }
+                aria-label={avatarLabels[preset]}
                 checked={avatar === preset}
                 onChange={() => {
                   setAvatar(preset)

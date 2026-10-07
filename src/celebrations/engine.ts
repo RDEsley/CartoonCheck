@@ -12,10 +12,20 @@ interface Particle {
   life: number
   shape: 'strip' | 'circle' | 'star' | 'petal'
 }
+type Shape = Particle['shape']
 export interface CelebrationOptions {
   reduced: boolean
   haptics: boolean
-  sakura: boolean
+  shapes: readonly Shape[]
+}
+/** The particles each theme throws: petals for Sakura, stars for Space. */
+export function themeShapes(theme: string | undefined): readonly Shape[] {
+  if (theme === 'sakura') return ['petal']
+  if (theme === 'space') return ['star']
+  if (theme === 'night-cartoon') return ['star', 'circle']
+  if (theme === 'candy') return ['circle', 'petal']
+  if (theme === 'doodle') return ['strip', 'star']
+  return ['strip', 'circle', 'star']
 }
 /** Present only when the purchase finished the list. */
 export interface Completion {
@@ -23,7 +33,6 @@ export interface Completion {
   confirm: () => Promise<boolean>
   celebrate: () => void
 }
-const shapes = ['strip', 'circle', 'star'] as const
 export class CelebrationEngine {
   generation = 0
   private canvas: HTMLCanvasElement | null = null
@@ -49,7 +58,7 @@ export class CelebrationEngine {
             rect.left + 34,
             rect.top + rect.height / 2,
             false,
-            options.sakura,
+            options.shapes,
           )
         }, 140)
       return
@@ -68,7 +77,7 @@ export class CelebrationEngine {
             window.innerWidth / 2,
             Math.min(window.innerHeight / 3, 300),
             true,
-            options.sakura,
+            options.shapes,
           )
         },
         () => undefined,
@@ -130,7 +139,12 @@ export class CelebrationEngine {
       this.ghosts.delete(element)
     }, 360)
   }
-  private burst(x: number, y: number, complete: boolean, sakura: boolean) {
+  private burst(
+    x: number,
+    y: number,
+    complete: boolean,
+    shapes: readonly Shape[],
+  ) {
     const style = getComputedStyle(document.documentElement)
     const colors = ['--accent', '--secondary', '--success'].map((key) =>
       style.getPropertyValue(key).trim(),
@@ -151,7 +165,7 @@ export class CelebrationEngine {
         angle,
         born: now,
         life: complete ? 1200 : 650,
-        shape: sakura ? 'petal' : (shapes[index % shapes.length] ?? 'strip'),
+        shape: shapes[index % shapes.length] ?? 'strip',
       })
     }
     if (this.canvas === null) {
