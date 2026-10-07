@@ -9,8 +9,12 @@ export async function getItemIds(
   status: ShoppingItem['status'],
 ) {
   assertDatabaseReady(db)
-  const query = db.items.where(status === 'pending'
-    ? '[listId+status+createdAt]' : '[listId+status+purchasedAt]')
+  const query = db.items
+    .where(
+      status === 'pending'
+        ? '[listId+status+createdAt]'
+        : '[listId+status+purchasedAt]',
+    )
     .between([listId, status, Dexie.minKey], [listId, status, Dexie.maxKey])
   return (status === 'purchased' ? query.reverse() : query).primaryKeys()
 }

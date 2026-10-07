@@ -19,15 +19,25 @@ export async function openTestDatabase(name = 'test-' + createId()) {
 
 export async function shoppingDatabase() {
   const scenario = await openTestDatabase()
-  const profile = await createProfile(scenario.db, scenario.context, { name: 'Richard' })
+  const profile = await createProfile(scenario.db, scenario.context, {
+    name: 'Richard',
+  })
   return { ...scenario, profile }
 }
 
-export async function attachPhoto(db: CartoonCheckDatabase, item: ShoppingItem) {
+export async function attachPhoto(
+  db: CartoonCheckDatabase,
+  item: ShoppingItem,
+) {
   const blob = new Blob(['stored photo'], { type: 'image/webp' })
   const photo = imageAssetSchema.parse({
-    id: createId(), blob, mime: blob.type, width: 100, height: 100,
-    byteLength: blob.size, createdAt: item.createdAt,
+    id: createId(),
+    blob,
+    mime: blob.type,
+    width: 100,
+    height: 100,
+    byteLength: blob.size,
+    createdAt: item.createdAt,
   })
   await db.transaction('rw', [db.assets, db.items], async () => {
     await db.assets.add(photo)

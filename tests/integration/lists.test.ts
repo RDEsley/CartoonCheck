@@ -1,11 +1,29 @@
 // @vitest-environment node
 import { describe, expect, it, vi } from 'vitest'
-import { attachPhoto, openTestDatabase, shoppingDatabase } from '../helpers/database'
 import {
-  archiveList, createList, deleteList, reactivateList, undoArchiveChange, updateList,
+  attachPhoto,
+  openTestDatabase,
+  shoppingDatabase,
+} from '../helpers/database'
+import {
+  archiveList,
+  createList,
+  deleteList,
+  reactivateList,
+  undoArchiveChange,
+  updateList,
 } from '../../src/features/lists/commands'
-import { addItem, deleteItem, setPurchased, updateItem } from '../../src/features/items/commands'
-import { getListIds, getListSummary, listProgress } from '../../src/features/lists/queries'
+import {
+  addItem,
+  deleteItem,
+  setPurchased,
+  updateItem,
+} from '../../src/features/items/commands'
+import {
+  getListIds,
+  getListSummary,
+  listProgress,
+} from '../../src/features/lists/queries'
 import { getHistoryPage } from '../../src/features/history/queries'
 
 describe('shopping list commands', () => {
@@ -13,43 +31,74 @@ describe('shopping list commands', () => {
     const { db, context } = await shoppingDatabase()
     const list = await createList(db, context, { name: 'Japão' })
     const item = await addItem(db, context, list.id, { name: 'Mochila' })
-    await expect(deleteList(db, context, list.id, list.revision))
-      .rejects.toMatchObject({ code: 'CONFLICT' })
+    await expect(
+      deleteList(db, context, list.id, list.revision),
+    ).rejects.toMatchObject({ code: 'CONFLICT' })
     expect(await db.lists.get(list.id)).toBeDefined()
     expect(await db.items.get(item.id)).toEqual(item)
   })
   it('requires a local profile before creating a list', async () => {
     const { db, context } = await openTestDatabase()
-    await expect(createList(db, context, { name: 'Japão' }))
-      .rejects.toMatchObject({ code: 'PROFILE_REQUIRED' })
+    await expect(
+      createList(db, context, { name: 'Japão' }),
+    ).rejects.toMatchObject({ code: 'PROFILE_REQUIRED' })
     expect(await db.lists.count()).toBe(0)
     expect(await db.history.count()).toBe(0)
   })
 
   it('creates a normalized list with currency and historical snapshot', async () => {
     const { db, context } = await shoppingDatabase()
-    const list = await createList(db, context, { name: '  Japão  ', emoji: '🇯🇵', currency: 'JPY' })
-    expect(list).toMatchObject({ name: 'Japão', status: 'active', currency: 'JPY', revision: 1 })
+    const list = await createList(db, context, {
+      name: '  Japão  ',
+      emoji: '🇯🇵',
+      currency: 'JPY',
+    })
+    expect(list).toMatchObject({
+      name: 'Japão',
+      status: 'active',
+      currency: 'JPY',
+      revision: 1,
+    })
     expect(await db.lists.get(list.id)).toEqual(list)
     expect(await getListSummary(db, list.id)).toMatchObject({
-      pendingCount: 0, purchasedCount: 0, progress: null,
+      pendingCount: 0,
+      purchasedCount: 0,
+      progress: null,
     })
-    expect(await getHistoryPage(db)).toMatchObject([{
-      action: 'list_created', listId: list.id, listName: 'Japão', itemId: null,
-    }])
+    expect(await getHistoryPage(db)).toMatchObject([
+      {
+        action: 'list_created',
+        listId: list.id,
+        listName: 'Japão',
+        itemId: null,
+      },
+    ])
   })
 
   it('preserves currency settings on rename and refuses stale edits', async () => {
     const { db, context } = await shoppingDatabase()
     const list = await createList(db, context, {
-      name: 'Japão', currency: 'JPY', secondaryCurrency: 'BRL', manualExchangeRate: '0.035',
+      name: 'Japão',
+      currency: 'JPY',
+      secondaryCurrency: 'BRL',
+      manualExchangeRate: '0.035',
     })
-    const renamed = await updateList(db, context, list.id, { name: 'Viagem' }, list.revision)
+    const renamed = await updateList(
+      db,
+      context,
+      list.id,
+      { name: 'Viagem' },
+      list.revision,
+    )
     expect(renamed).toMatchObject({
-      currency: 'JPY', secondaryCurrency: 'BRL', manualExchangeRate: '0.035', revision: 2,
+      currency: 'JPY',
+      secondaryCurrency: 'BRL',
+      manualExchangeRate: '0.035',
+      revision: 2,
     })
-    await expect(updateList(db, context, list.id, { name: 'Obsoleto' }, list.revision))
-      .rejects.toMatchObject({ code: 'CONFLICT' })
+    await expect(
+      updateList(db, context, list.id, { name: 'Obsoleto' }, list.revision),
+    ).rejects.toMatchObject({ code: 'CONFLICT' })
     expect(await db.lists.get(list.id)).toEqual(renamed)
     expect(await getHistoryPage(db)).toMatchObject([{ listName: 'Japão' }])
   })
@@ -68,11 +117,19 @@ describe('shopping list commands', () => {
     const list = await createList(db, context, { name: 'Japão' })
     const archived = await archiveList(db, context, list.id)
     const restored = await undoArchiveChange(db, context, archived)
-    expect(restored).toMatchObject({ status: 'active', revision: archived.revision + 1 })
-    await expect(undoArchiveChange(db, context, archived)).rejects.toMatchObject({ code: 'CONFLICT' })
-    expect(await undoArchiveChange(db, context, restored)).toMatchObject({ status: 'archived' })
-    expect((await getHistoryPage(db, 0, list.id)).map((entry) => entry.action))
-      .toEqual(expect.arrayContaining(['list_archived', 'list_reactivated']))
+    expect(restored).toMatchObject({
+      status: 'active',
+      revision: archived.revision + 1,
+    })
+    await expect(
+      undoArchiveChange(db, context, archived),
+    ).rejects.toMatchObject({ code: 'CONFLICT' })
+    expect(await undoArchiveChange(db, context, restored)).toMatchObject({
+      status: 'archived',
+    })
+    expect(
+      (await getHistoryPage(db, 0, list.id)).map((entry) => entry.action),
+    ).toEqual(expect.arrayContaining(['list_archived', 'list_reactivated']))
     expect((await db.lists.get(list.id))?.status).toBe('archived')
   })
 
@@ -82,51 +139,102 @@ describe('shopping list commands', () => {
     const item = await addItem(db, context, list.id, { name: 'Mochila' })
     const archived = await archiveList(db, context, list.id)
     expect(await archiveList(db, context, list.id)).toEqual(archived)
-    await expect(addItem(db, context, list.id, { name: 'KitKat' }))
-      .rejects.toMatchObject({ code: 'ARCHIVED_LIST' })
-    await expect(updateList(db, context, list.id, { name: 'Outra' }, archived.revision))
-      .rejects.toMatchObject({ code: 'ARCHIVED_LIST' })
-    await expect(updateItem(db, context, item.id, { name: 'Outra' }, item.revision))
-      .rejects.toMatchObject({ code: 'ARCHIVED_LIST' })
-    await expect(setPurchased(db, context, item.id, true))
-      .rejects.toMatchObject({ code: 'ARCHIVED_LIST' })
-    await expect(deleteItem(db, context, item.id))
-      .rejects.toMatchObject({ code: 'ARCHIVED_LIST' })
+    await expect(
+      addItem(db, context, list.id, { name: 'KitKat' }),
+    ).rejects.toMatchObject({ code: 'ARCHIVED_LIST' })
+    await expect(
+      updateList(db, context, list.id, { name: 'Outra' }, archived.revision),
+    ).rejects.toMatchObject({ code: 'ARCHIVED_LIST' })
+    await expect(
+      updateItem(db, context, item.id, { name: 'Outra' }, item.revision),
+    ).rejects.toMatchObject({ code: 'ARCHIVED_LIST' })
+    await expect(
+      setPurchased(db, context, item.id, true),
+    ).rejects.toMatchObject({ code: 'ARCHIVED_LIST' })
+    await expect(deleteItem(db, context, item.id)).rejects.toMatchObject({
+      code: 'ARCHIVED_LIST',
+    })
     expect(await getListIds(db)).toEqual([])
     expect(await getListIds(db, 'archived')).toEqual([list.id])
     await reactivateList(db, context, list.id)
     expect(await getListIds(db)).toEqual([list.id])
-    expect(await db.history.filter((entry) => entry.action === 'list_archived').count()).toBe(1)
+    expect(
+      await db.history
+        .filter((entry) => entry.action === 'list_archived')
+        .count(),
+    ).toBe(1)
   })
 
   it('does not reinterpret prices when changing currency, including zero', async () => {
     const { db, context } = await shoppingDatabase()
-    const list = await createList(db, context, { name: 'Japão', currency: 'JPY' })
-    await addItem(db, context, list.id, { name: 'Presente', plannedPriceMinor: 0, expectedCurrency: 'JPY' })
+    const list = await createList(db, context, {
+      name: 'Japão',
+      currency: 'JPY',
+    })
+    await addItem(db, context, list.id, {
+      name: 'Presente',
+      plannedPriceMinor: 0,
+      expectedCurrency: 'JPY',
+    })
     const current = await db.lists.get(list.id)
-    await expect(updateList(db, context, list.id, { currency: 'BRL' }, current?.revision ?? 0))
-      .rejects.toMatchObject({ code: 'CURRENCY_LOCKED' })
+    await expect(
+      updateList(
+        db,
+        context,
+        list.id,
+        { currency: 'BRL' },
+        current?.revision ?? 0,
+      ),
+    ).rejects.toMatchObject({ code: 'CURRENCY_LOCKED' })
     expect((await db.lists.get(list.id))?.currency).toBe('JPY')
   })
 
   it('clears the exchange settings when an unpriced list changes currency', async () => {
     const { db, context } = await shoppingDatabase()
     const list = await createList(db, context, {
-      name: 'Japão', currency: 'JPY', secondaryCurrency: 'BRL', manualExchangeRate: '0.035',
+      name: 'Japão',
+      currency: 'JPY',
+      secondaryCurrency: 'BRL',
+      manualExchangeRate: '0.035',
     })
-    const updated = await updateList(db, context, list.id, { currency: 'EUR' }, list.revision)
-    expect(updated).toMatchObject({ currency: 'EUR', secondaryCurrency: null, manualExchangeRate: null })
+    const updated = await updateList(
+      db,
+      context,
+      list.id,
+      { currency: 'EUR' },
+      list.revision,
+    )
+    expect(updated).toMatchObject({
+      currency: 'EUR',
+      secondaryCurrency: null,
+      manualExchangeRate: null,
+    })
   })
 
   it('keeps an exchange pair provided together with the new currency', async () => {
     const { db, context } = await shoppingDatabase()
     const list = await createList(db, context, {
-      name: 'Japão', currency: 'JPY', secondaryCurrency: 'BRL', manualExchangeRate: '0.035',
+      name: 'Japão',
+      currency: 'JPY',
+      secondaryCurrency: 'BRL',
+      manualExchangeRate: '0.035',
     })
-    const updated = await updateList(db, context, list.id, {
-      currency: 'USD', secondaryCurrency: 'BRL', manualExchangeRate: '5.4',
-    }, list.revision)
-    expect(updated).toMatchObject({ currency: 'USD', secondaryCurrency: 'BRL', manualExchangeRate: '5.4' })
+    const updated = await updateList(
+      db,
+      context,
+      list.id,
+      {
+        currency: 'USD',
+        secondaryCurrency: 'BRL',
+        manualExchangeRate: '5.4',
+      },
+      list.revision,
+    )
+    expect(updated).toMatchObject({
+      currency: 'USD',
+      secondaryCurrency: 'BRL',
+      manualExchangeRate: '5.4',
+    })
   })
 
   it('deletes a list, its items and their photos while retaining history and other lists', async () => {
@@ -145,10 +253,12 @@ describe('shopping list commands', () => {
     expect(await db.items.get(otherItem.id)).toBeDefined()
     expect(await db.assets.get(otherPhoto.id)).toBeDefined()
     expect(await getListSummary(db, list.id)).toBeNull()
-    expect(await getHistoryPage(db, 0, list.id)).toEqual(expect.arrayContaining([
-      expect.objectContaining({ action: 'list_deleted', listName: 'Japão' }),
-      expect.objectContaining({ action: 'item_added', itemName: 'Mochila' }),
-    ]))
+    expect(await getHistoryPage(db, 0, list.id)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ action: 'list_deleted', listName: 'Japão' }),
+        expect.objectContaining({ action: 'item_added', itemName: 'Mochila' }),
+      ]),
+    )
   })
 
   it('rolls back cascading deletion if its history cannot be saved', async () => {
@@ -156,9 +266,13 @@ describe('shopping list commands', () => {
     const list = await createList(db, context, { name: 'Japão' })
     const item = await addItem(db, context, list.id, { name: 'Mochila' })
     const photo = await attachPhoto(db, item)
-    db.history.hook('creating', () => { throw new Error('History write failed') })
+    db.history.hook('creating', () => {
+      throw new Error('History write failed')
+    })
     const latest = await db.lists.get(list.id)
-    await expect(deleteList(db, context, list.id, latest?.revision ?? 0)).rejects.toThrow('History write failed')
+    await expect(
+      deleteList(db, context, list.id, latest?.revision ?? 0),
+    ).rejects.toThrow('History write failed')
     expect(await db.lists.get(list.id)).toBeDefined()
     expect(await db.items.get(item.id)).toBeDefined()
     expect(await db.assets.get(photo.id)).toBeDefined()

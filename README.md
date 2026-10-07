@@ -64,19 +64,19 @@ npm run dev
 
 On Windows PowerShell, use `npm.cmd` if the execution policy blocks `npm.ps1`.
 
-| Command                | Purpose                                             |
-| ---------------------- | --------------------------------------------------- |
-| `npm run dev`          | Start the development server                        |
-| `npm run lint`         | Type-aware linting, no warnings allowed             |
-| `npm run format`       | Format the code with Prettier                       |
-| `npm run typecheck`    | Check application, tooling and test types           |
-| `npm run test:run`     | Unit and integration tests                          |
-| `npm run test:e2e`     | Browser tests against the development server        |
-| `npm run build`        | Typecheck and build to `dist/`                      |
-| `npm run budget`       | Check the size budgets of the build                 |
-| `npm run test:pwa`     | Browser tests against the production build          |
-| `npm run preview`      | Serve the production build locally                  |
-| `npm run icons`        | Regenerate the PNG icons from `public/icon.svg`     |
+| Command             | Purpose                                         |
+| ------------------- | ----------------------------------------------- |
+| `npm run dev`       | Start the development server                    |
+| `npm run lint`      | Type-aware linting, no warnings allowed         |
+| `npm run format`    | Format the code with Prettier                   |
+| `npm run typecheck` | Check application, tooling and test types       |
+| `npm run test:run`  | Unit and integration tests                      |
+| `npm run test:e2e`  | Browser tests against the development server    |
+| `npm run build`     | Typecheck and build to `dist/`                  |
+| `npm run budget`    | Check the size budgets of the build             |
+| `npm run test:pwa`  | Browser tests against the production build      |
+| `npm run preview`   | Serve the production build locally              |
+| `npm run icons`     | Regenerate the PNG icons from `public/icon.svg` |
 
 Browser tests need Chromium once: `npx playwright install chromium`.
 
@@ -122,15 +122,15 @@ device was performed.
 
 **Performance.** Budgets are checked in CI. Measured on the production build:
 
-| Measure                                   | Budget    | Result    |
-| ----------------------------------------- | --------- | --------- |
-| JavaScript for the first screen (gzip)    | 220 KiB   | 172 KiB   |
-| Files stored for offline use              | 2.5 MiB   | 0.9 MiB   |
-| Largest contentful paint, first visit     | 2.5 s     | 2.1 s     |
-| Cumulative layout shift, first visit      | 0.1       | 0.00      |
-| Checking an item in a 1000-item list      | n/a       | ~20 ms    |
-| Same, with the processor 4x slower        | 150 ms    | ~175 ms   |
-| Export / restore of a 64 MiB backup       | n/a       | ~1 s / ~7 s |
+| Measure                                | Budget  | Result      |
+| -------------------------------------- | ------- | ----------- |
+| JavaScript for the first screen (gzip) | 220 KiB | 172 KiB     |
+| Files stored for offline use           | 2.5 MiB | 0.9 MiB     |
+| Largest contentful paint, first visit  | 2.5 s   | 2.1 s       |
+| Cumulative layout shift, first visit   | 0.1     | 0.00        |
+| Checking an item in a 1000-item list   | n/a     | ~20 ms      |
+| Same, with the processor 4x slower     | 150 ms  | ~175 ms     |
+| Export / restore of a 64 MiB backup    | n/a     | ~1 s / ~7 s |
 
 Paint and shift use a throttled phone profile in desktop Chromium (1.6 Mbps,
 150 ms latency, processor 4x slower). The item and backup timings come from a

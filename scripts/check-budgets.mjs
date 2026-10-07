@@ -18,7 +18,8 @@ const scripts = Array.from(
   html.matchAll(/<(?:script|link)\b[^>]*\b(?:src|href)="([^"]+\.js)"/g),
   (match) => match[1],
 )
-if (scripts.length === 0) throw new Error('No scripts found in dist/index.html.')
+if (scripts.length === 0)
+  throw new Error('No scripts found in dist/index.html.')
 let initialScript = 0
 for (const script of scripts)
   initialScript += gzipSync(await readFile(asset(script))).byteLength
@@ -28,7 +29,8 @@ const worker = await readFile(asset('sw.js'), 'utf8')
 const cached = Array.from(
   new Set(Array.from(worker.matchAll(/url:"([^"]+)"/g), (match) => match[1])),
 )
-if (cached.length === 0) throw new Error('No precache entries found in dist/sw.js.')
+if (cached.length === 0)
+  throw new Error('No precache entries found in dist/sw.js.')
 let precache = 0
 for (const file of cached) precache += (await stat(asset(file))).size
 

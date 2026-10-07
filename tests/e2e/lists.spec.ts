@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
-test('creates, edits, archives, reactivates and deletes a list', async ({ page }) => {
+test('creates, edits, archives, reactivates and deletes a list', async ({
+  page,
+}) => {
   await page.goto('/app')
   await page.getByLabel('Seu nome').fill('Richard')
   await page.getByRole('button', { name: 'Vamos começar' }).click()
@@ -8,7 +10,9 @@ test('creates, edits, archives, reactivates and deletes a list', async ({ page }
   await page.getByRole('button', { name: 'Usar 🇯🇵' }).click()
   await page.getByLabel('Moeda', { exact: true }).selectOption('JPY')
   await page.getByRole('button', { name: 'Criar lista', exact: true }).click()
-  await expect(page.getByRole('heading', { name: '🇯🇵 Japão', exact: true })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: '🇯🇵 Japão', exact: true }),
+  ).toBeVisible()
   await page.getByRole('button', { name: 'Opções da lista' }).click()
   await page.getByRole('button', { name: 'Editar lista' }).click()
   await page.getByLabel('Nome da lista').fill('Viagem ao Japão')
@@ -28,13 +32,19 @@ test('creates, edits, archives, reactivates and deletes a list', async ({ page }
   await page.getByRole('button', { name: 'Opções da lista' }).click()
   await page.getByRole('button', { name: 'Excluir lista', exact: true }).click()
   await page.getByRole('button', { name: 'Manter lista' }).click()
-  await expect(page.getByRole('heading', { name: '🇯🇵 Viagem ao Japão', exact: true })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: '🇯🇵 Viagem ao Japão', exact: true }),
+  ).toBeVisible()
   await page.getByRole('button', { name: 'Opções da lista' }).click()
   await page.getByRole('button', { name: 'Excluir lista', exact: true }).click()
   await page.getByRole('button', { name: 'Excluir definitivamente' }).click()
-  await expect(page.getByRole('heading', { name: 'Sua próxima lista começa aqui.' })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Sua próxima lista começa aqui.' }),
+  ).toBeVisible()
 })
-test('keeps an archived list readable and says what deleting it removes', async ({ page }) => {
+test('keeps an archived list readable and says what deleting it removes', async ({
+  page,
+}) => {
   await page.goto('/app')
   await page.getByLabel('Seu nome').fill('Richard')
   await page.getByRole('button', { name: 'Vamos começar' }).click()
@@ -47,8 +57,12 @@ test('keeps an archived list readable and says what deleting it removes', async 
   await expect(page.getByLabel('Nome do item')).toHaveValue('')
   await page.getByRole('button', { name: 'Fechar', exact: true }).click()
   await page.getByRole('button', { name: 'Câmera', exact: true }).click()
-  await page.getByRole('textbox', { name: 'Nota', exact: true }).fill('Comprar em Akihabara')
-  await page.getByRole('textbox', { name: 'Link', exact: true }).fill('https://example.com/camera')
+  await page
+    .getByRole('textbox', { name: 'Nota', exact: true })
+    .fill('Comprar em Akihabara')
+  await page
+    .getByRole('textbox', { name: 'Link', exact: true })
+    .fill('https://example.com/camera')
   await page.getByRole('button', { name: 'Salvar item', exact: true }).click()
   await page.getByRole('button', { name: 'Câmera', exact: true }).click()
   const link = page.getByRole('link', { name: 'Abrir example.com' })
@@ -57,17 +71,27 @@ test('keeps an archived list readable and says what deleting it removes', async 
   await page.getByRole('button', { name: 'Fechar', exact: true }).click()
   await page.getByRole('button', { name: 'Opções da lista' }).click()
   await page.getByRole('button', { name: 'Arquivar lista' }).click()
-  await expect(page.getByRole('checkbox', { name: 'Comprar Câmera', exact: true })).toBeDisabled()
+  await expect(
+    page.getByRole('checkbox', { name: 'Comprar Câmera', exact: true }),
+  ).toBeDisabled()
   await page.getByRole('button', { name: 'Câmera', exact: true }).click()
   const details = page.getByRole('dialog', { name: 'Câmera' })
-  await expect(details.getByText('Comprar em Akihabara', { exact: true })).toBeVisible()
-  await expect(details.getByRole('link', { name: 'Abrir example.com' })).toBeVisible()
-  await expect(details.getByRole('button', { name: 'Salvar item' })).toHaveCount(0)
+  await expect(
+    details.getByText('Comprar em Akihabara', { exact: true }),
+  ).toBeVisible()
+  await expect(
+    details.getByRole('link', { name: 'Abrir example.com' }),
+  ).toBeVisible()
+  await expect(
+    details.getByRole('button', { name: 'Salvar item' }),
+  ).toHaveCount(0)
   await expect(details.getByRole('textbox')).toHaveCount(0)
   await details.getByRole('button', { name: 'Fechar', exact: true }).click()
   await page.getByRole('button', { name: 'Opções da lista' }).click()
   await page.getByRole('button', { name: 'Excluir lista', exact: true }).click()
-  await expect(page.getByRole('alertdialog', { name: 'Excluir esta lista?' })).toContainText(
+  await expect(
+    page.getByRole('alertdialog', { name: 'Excluir esta lista?' }),
+  ).toContainText(
     '“Japão” e seu item, com a foto se houver, serão excluídos. Esta ação não pode ser desfeita.',
   )
 })

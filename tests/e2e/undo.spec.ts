@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
-test('undoes a purchase and deletion and exposes their history', async ({ page }) => {
+test('undoes a purchase and deletion and exposes their history', async ({
+  page,
+}) => {
   await page.goto('/app')
   await page.getByLabel('Seu nome').fill('Richard')
   await page.getByRole('button', { name: 'Vamos começar' }).click()
@@ -12,15 +14,25 @@ test('undoes a purchase and deletion and exposes their history', async ({ page }
   await expect(page.getByLabel('Nome do item')).toHaveValue('')
   await page.getByRole('button', { name: 'Fechar', exact: true }).click()
   await page.getByRole('button', { name: 'Dispensar aviso' }).click()
-  await page.getByRole('checkbox', { name: 'Comprar Nintendo Switch 2' }).click()
+  await page
+    .getByRole('checkbox', { name: 'Comprar Nintendo Switch 2' })
+    .click()
   await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
-  await expect(page.getByRole('checkbox', { name: 'Comprar Nintendo Switch 2' })).toBeVisible()
+  await expect(
+    page.getByRole('checkbox', { name: 'Comprar Nintendo Switch 2' }),
+  ).toBeVisible()
   await page.getByRole('button', { name: 'Dispensar aviso' }).click()
-  await page.getByRole('button', { name: 'Nintendo Switch 2', exact: true }).click()
+  await page
+    .getByRole('button', { name: 'Nintendo Switch 2', exact: true })
+    .click()
   await page.getByRole('button', { name: 'Excluir item', exact: true }).click()
-  await expect(page.getByRole('checkbox', { name: 'Comprar Nintendo Switch 2' })).toHaveCount(0)
+  await expect(
+    page.getByRole('checkbox', { name: 'Comprar Nintendo Switch 2' }),
+  ).toHaveCount(0)
   await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
-  await expect(page.getByRole('checkbox', { name: 'Comprar Nintendo Switch 2' })).toBeVisible()
+  await expect(
+    page.getByRole('checkbox', { name: 'Comprar Nintendo Switch 2' }),
+  ).toBeVisible()
   await page.getByRole('link', { name: 'Histórico', exact: true }).click()
   await expect(page.getByText('Compra desfeita', { exact: true })).toBeVisible()
   await expect(page.getByText('Item restaurado', { exact: true })).toBeVisible()

@@ -39,7 +39,12 @@ test('blocks updates while another tab is active and recovers an unsaved profile
   ).toBeVisible()
   await expect(page.getByLabel('Seu nome')).toHaveValue('Richard viagem')
   await other.close()
-  await Promise.all([page.waitForEvent('load'), page.getByRole('button', { name: 'Atualizar Cartoon Check', exact: true }).click()])
+  await Promise.all([
+    page.waitForEvent('load'),
+    page
+      .getByRole('button', { name: 'Atualizar Cartoon Check', exact: true })
+      .click(),
+  ])
   await expect(page.getByLabel('Seu nome')).toHaveValue('Richard viagem')
   expect(await page.content()).toContain('cartoon-check-test-release-b')
   await page.getByRole('link', { name: 'Listas', exact: true }).click()

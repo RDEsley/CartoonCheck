@@ -44,7 +44,9 @@ test('keeps the feedback bar below open sheets and clear of the add button and l
   const navigation = await box(
     page.getByRole('navigation', { name: 'Navegação principal' }),
   )
-  const add = await box(page.getByRole('button', { name: 'Adicionar', exact: true }))
+  const add = await box(
+    page.getByRole('button', { name: 'Adicionar', exact: true }),
+  )
   const feedback = await box(bar)
   const last = await box(
     page.getByRole('button', { name: 'Lembrança 10', exact: true }),

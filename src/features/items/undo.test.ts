@@ -9,35 +9,73 @@ import { createId } from '../../lib/create-id'
 it('undoes a purchase without replaying completion and preserves other fields', async () => {
   const { db, context } = await shoppingDatabase()
   const list = await createList(db, context, { name: 'Japão' })
-  const item = await addItem(db, context, list.id, { name: 'Switch', note: 'OLED' })
+  const item = await addItem(db, context, list.id, {
+    name: 'Switch',
+    note: 'OLED',
+  })
   const result = await setPurchased(db, context, item.id, true)
   await undoItemAction(db, context, { kind: 'purchase', result })
-  expect(await db.items.get(item.id)).toMatchObject({ status: 'pending', purchasedAt: null, note: 'OLED', revision: 3 })
-  expect(await db.history.filter((entry) => entry.action === 'list_completed').count()).toBe(1)
-  await expect(undoItemAction(db, context, { kind: 'purchase', result })).rejects.toMatchObject({ code: 'CONFLICT' })
+  expect(await db.items.get(item.id)).toMatchObject({
+    status: 'pending',
+    purchasedAt: null,
+    note: 'OLED',
+    revision: 3,
+  })
+  expect(
+    await db.history
+      .filter((entry) => entry.action === 'list_completed')
+      .count(),
+  ).toBe(1)
+  await expect(
+    undoItemAction(db, context, { kind: 'purchase', result }),
+  ).rejects.toMatchObject({ code: 'CONFLICT' })
 })
 it('rejects an undo after another edit or a dataset replacement', async () => {
   const { db, context } = await shoppingDatabase()
   const list = await createList(db, context, { name: 'Japan' })
   const item = await addItem(db, context, list.id, { name: 'Switch' })
   const result = await setPurchased(db, context, item.id, true)
-  await updateItem(db, context, item.id, { name: 'Switch 2' }, result.item.revision)
-  await expect(undoItemAction(db, context, { kind: 'purchase', result })).rejects.toMatchObject({ code: 'CONFLICT' })
+  await updateItem(
+    db,
+    context,
+    item.id,
+    { name: 'Switch 2' },
+    result.item.revision,
+  )
+  await expect(
+    undoItemAction(db, context, { kind: 'purchase', result }),
+  ).rejects.toMatchObject({ code: 'CONFLICT' })
   await db.meta.put({ key: 'app', datasetEpoch: createId() })
-  await expect(undoItemAction(db, context, { kind: 'purchase', result })).rejects.toMatchObject({ code: 'STALE_DATASET' })
+  await expect(
+    undoItemAction(db, context, { kind: 'purchase', result }),
+  ).rejects.toMatchObject({ code: 'STALE_DATASET' })
   expect((await db.items.get(item.id))?.name).toBe('Switch 2')
 })
 it('refuses to restore a priced item after the list currency changed', async () => {
   const { db, context } = await shoppingDatabase()
-  const list = await createList(db, context, { name: 'Viagem', currency: 'BRL' })
-  const priced = await addItem(db, context, list.id, { name: 'Mala', plannedPriceMinor: 1000, expectedCurrency: 'BRL' })
+  const list = await createList(db, context, {
+    name: 'Viagem',
+    currency: 'BRL',
+  })
+  const priced = await addItem(db, context, list.id, {
+    name: 'Mala',
+    plannedPriceMinor: 1000,
+    expectedCurrency: 'BRL',
+  })
   const plain = await addItem(db, context, list.id, { name: 'Mapa' })
   const pricedSnapshot = await deleteItem(db, context, priced.id)
   const plainSnapshot = await deleteItem(db, context, plain.id)
   const current = await db.lists.get(list.id)
-  await updateList(db, context, list.id, { currency: 'JPY' }, current?.revision ?? 0)
-  await expect(undoItemAction(db, context, { kind: 'delete', snapshot: pricedSnapshot }))
-    .rejects.toMatchObject({ code: 'CONFLICT' })
+  await updateList(
+    db,
+    context,
+    list.id,
+    { currency: 'JPY' },
+    current?.revision ?? 0,
+  )
+  await expect(
+    undoItemAction(db, context, { kind: 'delete', snapshot: pricedSnapshot }),
+  ).rejects.toMatchObject({ code: 'CONFLICT' })
   expect(await db.items.get(priced.id)).toBeUndefined()
   await undoItemAction(db, context, { kind: 'delete', snapshot: plainSnapshot })
   expect(await db.items.get(plain.id)).toMatchObject({ name: 'Mapa' })
@@ -48,9 +86,13 @@ it('restores a removed item with its photo and rolls back if history fails', asy
   const item = await addItem(db, context, list.id, { name: 'Camera' })
   const photo = await attachPhoto(db, item)
   const snapshot = await deleteItem(db, context, item.id)
-  const failHistory = () => { throw new Error('disk error') }
+  const failHistory = () => {
+    throw new Error('disk error')
+  }
   db.history.hook('creating', failHistory)
-  await expect(undoItemAction(db, context, { kind: 'delete', snapshot })).rejects.toThrow('disk error')
+  await expect(
+    undoItemAction(db, context, { kind: 'delete', snapshot }),
+  ).rejects.toThrow('disk error')
   expect(await db.items.count()).toBe(0)
   expect(await db.assets.count()).toBe(0)
   db.history.hook('creating').unsubscribe(failHistory)

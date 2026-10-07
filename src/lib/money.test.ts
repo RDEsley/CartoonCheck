@@ -39,13 +39,25 @@ it('names the problem with a rejected price, rate or link', () => {
   )
   expect(parseRate(' 0,03500 ')).toBe('0.035')
   expect(parseRate('28.50')).toBe('28.5')
-  for (const rate of ['', '0', '.5', '1.000,5', '1e3', '1000001', '0.000000001'])
+  for (const rate of [
+    '',
+    '0',
+    '.5',
+    '1.000,5',
+    '1e3',
+    '1000001',
+    '0.000000001',
+  ])
     expect(problem(() => parseRate(rate))).toBe('rate')
   expect(parseLink('  ')).toBeNull()
   expect(parseLink(' https://example.com/switch ')).toBe(
     'https://example.com/switch',
   )
-  for (const link of ['example.com', 'javascript:alert(1)', 'ftp://example.com'])
+  for (const link of [
+    'example.com',
+    'javascript:alert(1)',
+    'ftp://example.com',
+  ])
     expect(problem(() => parseLink(link))).toBe('link')
 })
 it('converts currencies with exact rational arithmetic and half-up rounding', () => {

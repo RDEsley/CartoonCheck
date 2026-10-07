@@ -8,14 +8,20 @@ export interface CommandContext {
 
 export function assertDatabaseReady(db: CartoonCheckDatabase): void {
   if (db.state !== 'ready' || !db.isOpen()) {
-    throw new DataError('DATABASE_UNAVAILABLE', 'The database connection is unavailable.')
+    throw new DataError(
+      'DATABASE_UNAVAILABLE',
+      'The database connection is unavailable.',
+    )
   }
 }
 
-export async function getCommandContext(db: CartoonCheckDatabase): Promise<CommandContext> {
+export async function getCommandContext(
+  db: CartoonCheckDatabase,
+): Promise<CommandContext> {
   assertDatabaseReady(db)
   const row = await db.meta.get('app')
-  if (!row) throw new DataError('INVALID_DATABASE', 'Database metadata is missing.')
+  if (!row)
+    throw new DataError('INVALID_DATABASE', 'Database metadata is missing.')
   return { datasetEpoch: metaSchema.parse(row).datasetEpoch }
 }
 
@@ -25,13 +31,19 @@ export async function assertDataset(
 ): Promise<void> {
   const current = await getCommandContext(db)
   if (current.datasetEpoch !== context.datasetEpoch) {
-    throw new DataError('STALE_DATASET', 'The data was replaced. Reload before making changes.')
+    throw new DataError(
+      'STALE_DATASET',
+      'The data was replaced. Reload before making changes.',
+    )
   }
 }
 
 export function assertRevision(current: number, expected: number): void {
   if (current !== expected) {
-    throw new DataError('CONFLICT', 'The record changed. Review the latest data before saving.')
+    throw new DataError(
+      'CONFLICT',
+      'The record changed. Review the latest data before saving.',
+    )
   }
 }
 

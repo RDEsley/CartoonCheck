@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test'
 for (const reducedMotion of ['no-preference', 'reduce'] as const) {
-  test(`purchase feedback cleans up with reduced motion ${reducedMotion}`, async ({ page }) => {
+  test(`purchase feedback cleans up with reduced motion ${reducedMotion}`, async ({
+    page,
+  }) => {
     await page.emulateMedia({ reducedMotion })
     await page.goto('/app')
     await page.getByLabel('Seu nome').fill('Richard')
@@ -14,19 +16,33 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
     await expect(page.getByLabel('Nome do item')).toHaveValue('')
     await page.getByRole('button', { name: 'Fechar', exact: true }).click()
     await page.getByRole('button', { name: 'Dispensar aviso' }).click()
-    await page.getByRole('checkbox', { name: 'Comprar Switch', exact: true }).click()
+    await page
+      .getByRole('checkbox', { name: 'Comprar Switch', exact: true })
+      .click()
     if (reducedMotion === 'reduce') {
-      await expect(page.locator('.purchase-ghost, .celebration-canvas')).toHaveCount(0)
+      await expect(
+        page.locator('.purchase-ghost, .celebration-canvas'),
+      ).toHaveCount(0)
     }
-    await expect(page.getByRole('status').filter({ hasText: 'Lista completa!' }).first()).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Nada pendente por aqui.' })).toBeVisible()
-    await expect(page.locator('.purchase-ghost, .celebration-canvas')).toHaveCount(0, { timeout: 3000 })
+    await expect(
+      page.getByRole('status').filter({ hasText: 'Lista completa!' }).first(),
+    ).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Nada pendente por aqui.' }),
+    ).toBeVisible()
+    await expect(
+      page.locator('.purchase-ghost, .celebration-canvas'),
+    ).toHaveCount(0, { timeout: 3000 })
     await page.reload()
     await expect(page.getByRole('tab', { name: 'Comprei' })).toBeVisible()
-    await expect(page.locator('.purchase-ghost, .celebration-canvas')).toHaveCount(0)
+    await expect(
+      page.locator('.purchase-ghost, .celebration-canvas'),
+    ).toHaveCount(0)
   })
 }
-test('undoing the last purchase before the completion fires cancels the celebration', async ({ page }) => {
+test('undoing the last purchase before the completion fires cancels the celebration', async ({
+  page,
+}) => {
   await page.goto('/app')
   await page.getByLabel('Seu nome').fill('Richard')
   await page.getByRole('button', { name: 'Vamos começar' }).click()
@@ -39,11 +55,19 @@ test('undoing the last purchase before the completion fires cancels the celebrat
   await expect(page.getByLabel('Nome do item')).toHaveValue('')
   await page.getByRole('button', { name: 'Fechar', exact: true }).click()
   await page.getByRole('button', { name: 'Dispensar aviso' }).click()
-  await page.getByRole('checkbox', { name: 'Comprar Switch', exact: true }).click()
+  await page
+    .getByRole('checkbox', { name: 'Comprar Switch', exact: true })
+    .click()
   await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
-  await expect(page.getByRole('checkbox', { name: 'Comprar Switch', exact: true })).toBeVisible()
+  await expect(
+    page.getByRole('checkbox', { name: 'Comprar Switch', exact: true }),
+  ).toBeVisible()
   await page.waitForTimeout(900)
-  await expect(page.getByRole('status').filter({ hasText: 'Lista completa!' })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Desfazer', exact: true })).toHaveCount(0)
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Lista completa!' }),
+  ).toHaveCount(0)
+  await expect(
+    page.getByRole('button', { name: 'Desfazer', exact: true }),
+  ).toHaveCount(0)
   await expect(page.locator('.celebration-canvas')).toHaveCount(0)
 })

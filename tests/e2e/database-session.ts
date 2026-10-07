@@ -30,18 +30,28 @@ export async function connectDatabase(page: Page, name: string) {
       listQueries: '/src/features/lists/queries.ts',
       itemQueries: '/src/features/items/queries.ts',
     }
-    const databaseModule = await import(paths.db) as typeof import('../../src/db/database')
-    const contextModule = await import(paths.context) as typeof import('../../src/db/context')
+    const databaseModule = (await import(
+      paths.db
+    )) as typeof import('../../src/db/database')
+    const contextModule = (await import(
+      paths.context
+    )) as typeof import('../../src/db/context')
     const db = new databaseModule.CartoonCheckDatabase(databaseName)
     await db.initialize()
     window.cartoonCheckTestSession = {
       db,
       context: await contextModule.getCommandContext(db),
-      profile: await import(paths.profile) as BrowserDatabaseSession['profile'],
-      lists: await import(paths.lists) as BrowserDatabaseSession['lists'],
-      items: await import(paths.items) as BrowserDatabaseSession['items'],
-      listQueries: await import(paths.listQueries) as BrowserDatabaseSession['listQueries'],
-      itemQueries: await import(paths.itemQueries) as BrowserDatabaseSession['itemQueries'],
+      profile: (await import(
+        paths.profile
+      )) as BrowserDatabaseSession['profile'],
+      lists: (await import(paths.lists)) as BrowserDatabaseSession['lists'],
+      items: (await import(paths.items)) as BrowserDatabaseSession['items'],
+      listQueries: (await import(
+        paths.listQueries
+      )) as BrowserDatabaseSession['listQueries'],
+      itemQueries: (await import(
+        paths.itemQueries
+      )) as BrowserDatabaseSession['itemQueries'],
     }
   }, name)
 }

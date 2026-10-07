@@ -43,14 +43,18 @@ for (const [width, height] of [
       await page.goto('/')
       await expectNoHorizontalOverflow(page, 'landing')
       await page.goto('/app')
-      await page.getByLabel('Seu nome').fill('Richard Oliveira de Nome Muito Comprido')
+      await page
+        .getByLabel('Seu nome')
+        .fill('Richard Oliveira de Nome Muito Comprido')
       await expectNoHorizontalOverflow(page, 'onboarding')
       await page.getByRole('button', { name: 'Vamos começar' }).click()
       await page.getByRole('button', { name: 'Nova lista' }).click()
       await page.getByLabel('Nome da lista').fill(longName)
       await page.getByText('Cotação manual (opcional)', { exact: true }).click()
       await expectNoHorizontalOverflow(page, 'new list sheet')
-      await page.getByRole('button', { name: 'Criar lista', exact: true }).click()
+      await page
+        .getByRole('button', { name: 'Criar lista', exact: true })
+        .click()
       await page.getByRole('button', { name: 'Adicionar', exact: true }).click()
       const name = page.getByLabel('Nome do item')
       for (const item of [longName, 'KitKat']) {
@@ -62,12 +66,20 @@ for (const [width, height] of [
       await page.getByRole('button', { name: 'Fechar', exact: true }).click()
       await expectNoHorizontalOverflow(page, 'list with the feedback bar')
       const bars = await page.evaluate(() =>
-        ['nav[aria-label="Navegação principal"]', '[data-add-item]', 'aside[aria-label="Última ação"]'].map(
-          (selector) => {
-            const rectangle = document.querySelector(selector)?.getBoundingClientRect()
-            return rectangle !== undefined && rectangle.left >= 0 && rectangle.right <= innerWidth
-          },
-        ),
+        [
+          'nav[aria-label="Navegação principal"]',
+          '[data-add-item]',
+          'aside[aria-label="Última ação"]',
+        ].map((selector) => {
+          const rectangle = document
+            .querySelector(selector)
+            ?.getBoundingClientRect()
+          return (
+            rectangle !== undefined &&
+            rectangle.left >= 0 &&
+            rectangle.right <= innerWidth
+          )
+        }),
       )
       expect(bars).toEqual([true, true, true])
       await page.getByRole('button', { name: longName, exact: true }).click()
@@ -79,7 +91,9 @@ for (const [width, height] of [
       await page.getByRole('link', { name: 'Ajustes', exact: true }).click()
       await expectNoHorizontalOverflow(page, 'settings')
       await page.getByRole('link', { name: 'Listas', exact: true }).click()
-      await expect(page.getByRole('link', { name: new RegExp(longName) })).toBeVisible()
+      await expect(
+        page.getByRole('link', { name: new RegExp(longName) }),
+      ).toBeVisible()
       await expectNoHorizontalOverflow(page, 'home with a long list name')
     })
   })

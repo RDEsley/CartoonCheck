@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
-test('quickly adds items, persists purchases, edits and removes an item', async ({ page }) => {
+test('quickly adds items, persists purchases, edits and removes an item', async ({
+  page,
+}) => {
   await page.goto('/app')
   await page.getByLabel('Seu nome').fill('Richard')
   await page.getByRole('button', { name: 'Vamos começar' }).click()
@@ -17,17 +19,35 @@ test('quickly adds items, persists purchases, edits and removes an item', async 
   await expect(name).toHaveValue('')
   await page.getByRole('button', { name: 'Fechar', exact: true }).click()
   await page.reload()
-  await page.getByRole('checkbox', { name: 'Comprar Nintendo Switch 2', exact: true }).click()
-  await expect(page.getByRole('checkbox', { name: 'Comprar Nintendo Switch 2', exact: true })).toHaveCount(0)
-  await expect(page.getByRole('checkbox', { name: 'Comprar KitKat', exact: true })).not.toBeFocused()
+  await page
+    .getByRole('checkbox', { name: 'Comprar Nintendo Switch 2', exact: true })
+    .click()
+  await expect(
+    page.getByRole('checkbox', {
+      name: 'Comprar Nintendo Switch 2',
+      exact: true,
+    }),
+  ).toHaveCount(0)
+  await expect(
+    page.getByRole('checkbox', { name: 'Comprar KitKat', exact: true }),
+  ).not.toBeFocused()
   await page.getByRole('tab', { name: 'Comprei', exact: true }).click()
-  await page.getByRole('checkbox', { name: 'Desmarcar Nintendo Switch 2', exact: true }).click()
+  await page
+    .getByRole('checkbox', { name: 'Desmarcar Nintendo Switch 2', exact: true })
+    .click()
   await page.getByRole('tab', { name: 'Quero comprar', exact: true }).click()
   await page.getByRole('button', { name: 'KitKat', exact: true }).click()
   await page.getByLabel('Nome', { exact: true }).fill('KitKat matcha')
   await page.getByRole('button', { name: 'Salvar item', exact: true }).click()
   await page.getByRole('button', { name: 'KitKat matcha', exact: true }).click()
   await page.getByRole('button', { name: 'Excluir item', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'KitKat matcha', exact: true })).toHaveCount(0)
-  await expect(page.getByRole('checkbox', { name: 'Comprar Nintendo Switch 2', exact: true })).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'KitKat matcha', exact: true }),
+  ).toHaveCount(0)
+  await expect(
+    page.getByRole('checkbox', {
+      name: 'Comprar Nintendo Switch 2',
+      exact: true,
+    }),
+  ).toBeVisible()
 })

@@ -48,9 +48,7 @@ for (const theme of ['Comic Pop', 'Sakura', 'Night Cartoon']) {
     if (theme !== 'Comic Pop') {
       await page.getByText(theme, { exact: true }).click()
       await expect(
-        page
-          .getByRole('status')
-          .filter({ hasText: `Tema ${theme} aplicado!` }),
+        page.getByRole('status').filter({ hasText: `Tema ${theme} aplicado!` }),
       ).toHaveCount(1)
     }
     await audit(page, 'settings')
@@ -85,7 +83,9 @@ for (const theme of ['Comic Pop', 'Sakura', 'Night Cartoon']) {
     await page.getByRole('button', { name: 'Fechar', exact: true }).click()
     await page.getByRole('button', { name: 'Opções da lista' }).click()
     await audit(page, 'list options sheet')
-    await page.getByRole('button', { name: 'Excluir lista', exact: true }).click()
+    await page
+      .getByRole('button', { name: 'Excluir lista', exact: true })
+      .click()
     await audit(page, 'delete confirmation')
     await page.getByRole('button', { name: 'Manter lista' }).click()
     await page

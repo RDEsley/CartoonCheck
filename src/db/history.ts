@@ -12,8 +12,13 @@ export async function appendHistory(
   id = createId(),
 ): Promise<HistoryEntry> {
   const entry = historySchema.parse({
-    id, action, occurredAt, listId: list.id, listName: list.name,
-    itemId: item?.id ?? null, itemName: item?.name ?? null,
+    id,
+    action,
+    occurredAt,
+    listId: list.id,
+    listName: list.name,
+    itemId: item?.id ?? null,
+    itemName: item?.name ?? null,
   })
   await db.history.add(entry)
   return entry

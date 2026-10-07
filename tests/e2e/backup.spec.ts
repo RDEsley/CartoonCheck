@@ -21,13 +21,11 @@ test('exports and restores real photos and preserves current data when cancelled
     canvas.height = 32
     return canvas.toDataURL('image/png').split(',')[1] ?? ''
   })
-  await page
-    .getByLabel('Foto opcional')
-    .setInputFiles({
-      name: 'switch.png',
-      mimeType: 'image/png',
-      buffer: Buffer.from(photo, 'base64'),
-    })
+  await page.getByLabel('Foto opcional').setInputFiles({
+    name: 'switch.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(photo, 'base64'),
+  })
   await expect(page.getByRole('button', { name: 'Salvar item' })).toBeEnabled()
   await page.getByRole('button', { name: 'Salvar item' }).click()
   await page.getByRole('link', { name: 'Ajustes', exact: true }).click()
@@ -43,16 +41,16 @@ test('exports and restores real photos and preserves current data when cancelled
     page.getByRole('alertdialog', { name: 'Restaurar estes dados?' }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Cancelar restauração' }).click()
-  await page
-    .getByLabel('Escolher arquivo de backup')
-    .setInputFiles({
-      name: 'invalid.zip',
-      mimeType: 'application/zip',
-      buffer: Buffer.from('bad backup'),
-    })
+  await page.getByLabel('Escolher arquivo de backup').setInputFiles({
+    name: 'invalid.zip',
+    mimeType: 'application/zip',
+    buffer: Buffer.from('bad backup'),
+  })
   await expect(page.getByRole('alert')).toContainText('não é um backup válido')
   await page.getByLabel('Escolher arquivo de backup').setInputFiles(path)
-  await expect(page.getByText(/Exportado em .* versão \d+\.\d+\.\d+/)).toBeVisible()
+  await expect(
+    page.getByText(/Exportado em .* versão \d+\.\d+\.\d+/),
+  ).toBeVisible()
   const saving = page.waitForEvent('download')
   await page
     .getByRole('button', { name: 'Exportar meus dados atuais antes' })

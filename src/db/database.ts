@@ -3,10 +3,18 @@ import type { Table } from 'dexie'
 import { createId } from '../lib/create-id'
 import { DataError } from './errors'
 import { metaSchema } from './models'
-import type { AppMeta, HistoryEntry, ImageAsset, Profile, ShoppingItem, ShoppingList } from './models'
+import type {
+  AppMeta,
+  HistoryEntry,
+  ImageAsset,
+  Profile,
+  ShoppingItem,
+  ShoppingList,
+} from './models'
 import { DATABASE_NAME, DATABASE_VERSION, storesV1 } from './schema'
 
-export type DatabaseState = 'closed' | 'opening' | 'ready' | 'blocked' | 'outdated' | 'error'
+export type DatabaseState =
+  'closed' | 'opening' | 'ready' | 'blocked' | 'outdated' | 'error'
 
 export class CartoonCheckDatabase extends Dexie {
   readonly profile: Table<Profile, string>
@@ -30,15 +38,19 @@ export class CartoonCheckDatabase extends Dexie {
     this.history = this.table('history')
     this.meta = this.table('meta')
 
-    this.on('populate', (transaction) => transaction.table<AppMeta, string>('meta').add(
-      metaSchema.parse({ key: 'app', datasetEpoch: createId() }),
-    ))
+    this.on('populate', (transaction) =>
+      transaction
+        .table<AppMeta, string>('meta')
+        .add(metaSchema.parse({ key: 'app', datasetEpoch: createId() })),
+    )
     this.on('versionchange', () => {
       this.close()
       this.setState('outdated')
       return false
     })
-    this.on('blocked', () => { this.setState('blocked') })
+    this.on('blocked', () => {
+      this.setState('blocked')
+    })
   }
 
   get state(): DatabaseState {
@@ -47,23 +59,38 @@ export class CartoonCheckDatabase extends Dexie {
 
   async initialize(allowSchemaChange = true): Promise<void> {
     if (this.state === 'outdated') {
-      throw new DataError('DATABASE_UNAVAILABLE', 'Reload before opening an outdated connection.')
+      throw new DataError(
+        'DATABASE_UNAVAILABLE',
+        'Reload before opening an outdated connection.',
+      )
     }
     if (this.isOpen()) return
 
     this.setState('opening')
     try {
       const existingVersion = await this.assertSupportedVersion()
-      if (!allowSchemaChange && existingVersion !== DATABASE_VERSION) throw new DataError('DATABASE_UNAVAILABLE', 'Close other sessions before creating or upgrading the database.')
+      if (!allowSchemaChange && existingVersion !== DATABASE_VERSION)
+        throw new DataError(
+          'DATABASE_UNAVAILABLE',
+          'Close other sessions before creating or upgrading the database.',
+        )
       await this.open()
       // Dexie maps decimal schema versions to native versions multiplied by ten.
       if (this.backendDB().version / 10 > DATABASE_VERSION) {
-        throw new Dexie.VersionError('This database requires a newer application version.')
+        throw new Dexie.VersionError(
+          'This database requires a newer application version.',
+        )
       }
       this.setState('ready')
     } catch (error) {
       this.close()
-      this.setState(error instanceof Dexie.VersionError ? 'outdated' : error instanceof DataError ? 'blocked' : 'error')
+      this.setState(
+        error instanceof Dexie.VersionError
+          ? 'outdated'
+          : error instanceof DataError
+            ? 'blocked'
+            : 'error',
+      )
       throw error
     }
   }
@@ -83,7 +110,9 @@ export class CartoonCheckDatabase extends Dexie {
     try {
       await probe.open()
       if (probe.verno > DATABASE_VERSION) {
-        throw new Dexie.VersionError('This database requires a newer application version.')
+        throw new Dexie.VersionError(
+          'This database requires a newer application version.',
+        )
       }
       return probe.verno
     } catch (error) {

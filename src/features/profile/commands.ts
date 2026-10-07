@@ -1,12 +1,25 @@
 import type { CartoonCheckDatabase } from '../../db/database'
-import { assertDatabaseReady, assertDataset, assertRevision, updatedTime } from '../../db/context'
+import {
+  assertDatabaseReady,
+  assertDataset,
+  assertRevision,
+  updatedTime,
+} from '../../db/context'
 import type { CommandContext } from '../../db/context'
 import { DataError } from '../../db/errors'
 import {
-  createProfileSchema, imageAssetSchema, preferencesSchema, profileSchema, updateProfileSchema,
+  createProfileSchema,
+  imageAssetSchema,
+  preferencesSchema,
+  profileSchema,
+  updateProfileSchema,
 } from '../../db/models'
 import type {
-  CreateProfileInput, ImageAsset, PreferencesInput, Profile, UpdateProfileInput,
+  CreateProfileInput,
+  ImageAsset,
+  PreferencesInput,
+  Profile,
+  UpdateProfileInput,
 } from '../../db/models'
 import { requireProfile } from '../../db/records'
 import { createId } from '../../lib/create-id'
@@ -20,13 +33,17 @@ export async function createProfile(
   assertDatabaseReady(db)
   return db.transaction('rw', [db.meta, db.profile], async () => {
     await assertDataset(db, context)
-    if (await db.profile.count() > 0) {
+    if ((await db.profile.count()) > 0) {
       throw new DataError('PROFILE_EXISTS', 'A local profile already exists.')
     }
     const time = Date.now()
     const profile = profileSchema.parse({
-      ...fields, id: createId(), photoId: null,
-      createdAt: time, updatedAt: time, revision: 1,
+      ...fields,
+      id: createId(),
+      photoId: null,
+      createdAt: time,
+      updatedAt: time,
+      revision: 1,
     })
     await db.profile.add(profile)
     return profile
@@ -49,8 +66,10 @@ export async function updatePreferences(
     await assertDataset(db, context)
     const current = await requireProfile(db)
     const profile = profileSchema.parse({
-      ...current, ...fields,
-      updatedAt: updatedTime(current.updatedAt), revision: current.revision + 1,
+      ...current,
+      ...fields,
+      updatedAt: updatedTime(current.updatedAt),
+      revision: current.revision + 1,
     })
     await db.profile.put(profile)
     return profile
@@ -66,15 +85,25 @@ export async function updateProfile(
 ): Promise<Profile> {
   const fields = updateProfileSchema.parse(input)
   const asset = photo === undefined ? undefined : imageAssetSchema.parse(photo)
-  if (asset !== undefined && (asset.width > 256 || asset.height > 256 || asset.byteLength > 128 * 1024)) throw new DataError('CONFLICT', 'Resize the avatar before saving.')
+  if (
+    asset !== undefined &&
+    (asset.width > 256 || asset.height > 256 || asset.byteLength > 128 * 1024)
+  )
+    throw new DataError('CONFLICT', 'Resize the avatar before saving.')
   assertDatabaseReady(db)
   return db.transaction('rw', [db.meta, db.profile, db.assets], async () => {
     await assertDataset(db, context)
     const current = await requireProfile(db)
     assertRevision(current.revision, expectedRevision)
     const profile = profileSchema.parse({
-      ...current, ...fields,
-      ...(asset === undefined ? { photoId: fields.avatarPresetId === undefined ? current.photoId : null } : { photoId: asset.id, avatarPresetId: null }),
+      ...current,
+      ...fields,
+      ...(asset === undefined
+        ? {
+            photoId:
+              fields.avatarPresetId === undefined ? current.photoId : null,
+          }
+        : { photoId: asset.id, avatarPresetId: null }),
       updatedAt: updatedTime(current.updatedAt),
       revision: current.revision + 1,
     })

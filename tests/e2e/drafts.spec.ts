@@ -94,11 +94,17 @@ test('keeps a draft older than its data until it is saved elsewhere or discarded
   await expect(sheet.getByRole('alert')).toContainText(
     'Há um rascunho desta edição feito antes de os dados mudarem.',
   )
-  await expect(sheet.getByRole('textbox', { name: 'Nota', exact: true })).toHaveCount(0)
+  await expect(
+    sheet.getByRole('textbox', { name: 'Nota', exact: true }),
+  ).toHaveCount(0)
   await page.keyboard.press('Escape')
   await expect(sheet).toHaveCount(0)
   await resume.click()
   await sheet.getByRole('button', { name: 'Descartar rascunho' }).click()
-  await expect(sheet.getByRole('textbox', { name: 'Nota', exact: true })).toHaveValue('')
-  await expect(sheet.getByRole('textbox', { name: 'Nome', exact: true })).toHaveValue('Switch')
+  await expect(
+    sheet.getByRole('textbox', { name: 'Nota', exact: true }),
+  ).toHaveValue('')
+  await expect(
+    sheet.getByRole('textbox', { name: 'Nome', exact: true }),
+  ).toHaveValue('Switch')
 })

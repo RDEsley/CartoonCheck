@@ -24,7 +24,9 @@ afterEach(async () => {
 describe('IndexedDB foundation', () => {
   it('requires permission to create a schema while sharing an existing session', async () => {
     const db = database()
-    await expect(db.initialize(false)).rejects.toMatchObject({ code: 'DATABASE_UNAVAILABLE' })
+    await expect(db.initialize(false)).rejects.toMatchObject({
+      code: 'DATABASE_UNAVAILABLE',
+    })
     expect(db.state).toBe('blocked')
     expect(await Dexie.exists(db.name)).toBe(false)
     await db.initialize()
@@ -38,7 +40,9 @@ describe('IndexedDB foundation', () => {
     await db.initialize()
     expect(db.state).toBe('ready')
     expect(db.verno).toBe(DATABASE_VERSION)
-    expect(db.tables.map((table) => table.name).sort()).toEqual(Object.keys(storesV1).sort())
+    expect(db.tables.map((table) => table.name).sort()).toEqual(
+      Object.keys(storesV1).sort(),
+    )
     const context = await getCommandContext(db)
     expect(context.datasetEpoch).toMatch(/^[\da-f-]{36}$/)
     expect(await db.meta.count()).toBe(1)
@@ -52,7 +56,9 @@ describe('IndexedDB foundation', () => {
     await db.initialize()
     expect(db.items.schema.primKey.auto).toBe(false)
     expect(db.items.schema.indexes.map((index) => index.name)).toEqual([
-      'listId', '[listId+status+createdAt]', '[listId+status+purchasedAt]',
+      'listId',
+      '[listId+status+createdAt]',
+      '[listId+status+purchasedAt]',
     ])
     expect(db.assets.schema.indexes).toEqual([])
   })
@@ -61,8 +67,12 @@ describe('IndexedDB foundation', () => {
     const db = database()
     await db.initialize()
     db.close()
-    await expect(getCommandContext(db)).rejects.toMatchObject({ code: 'DATABASE_UNAVAILABLE' })
-    await expect(db.meta.count()).rejects.toMatchObject({ name: 'DatabaseClosedError' })
+    await expect(getCommandContext(db)).rejects.toMatchObject({
+      code: 'DATABASE_UNAVAILABLE',
+    })
+    await expect(db.meta.count()).rejects.toMatchObject({
+      name: 'DatabaseClosedError',
+    })
     expect(db.isOpen()).toBe(false)
   })
 
@@ -76,8 +86,13 @@ describe('IndexedDB foundation', () => {
     await newer.open()
     expect(db.state).toBe('outdated')
     expect(db.isOpen()).toBe(false)
-    expect(await newer.table('meta').get('app')).toEqual({ key: 'app', ...original })
-    await expect(db.initialize()).rejects.toMatchObject({ code: 'DATABASE_UNAVAILABLE' })
+    expect(await newer.table('meta').get('app')).toEqual({
+      key: 'app',
+      ...original,
+    })
+    await expect(db.initialize()).rejects.toMatchObject({
+      code: 'DATABASE_UNAVAILABLE',
+    })
   })
 
   it('refuses a newer database without deleting or downgrading it', async () => {
@@ -89,17 +104,23 @@ describe('IndexedDB foundation', () => {
     const epoch = createId()
     await newer.table('meta').add({ key: 'app', datasetEpoch: epoch })
     newer.close()
-    await expect(db.initialize()).rejects.toMatchObject({ name: 'VersionError' })
+    await expect(db.initialize()).rejects.toMatchObject({
+      name: 'VersionError',
+    })
     expect(db.state).toBe('outdated')
     await newer.open()
-    expect(await newer.table('meta').get('app')).toMatchObject({ datasetEpoch: epoch })
+    expect(await newer.table('meta').get('app')).toMatchObject({
+      datasetEpoch: epoch,
+    })
   })
 
   it('reports missing metadata without silently replacing data', async () => {
     const db = database()
     await db.initialize()
     await db.meta.delete('app')
-    await expect(getCommandContext(db)).rejects.toMatchObject({ code: 'INVALID_DATABASE' })
+    await expect(getCommandContext(db)).rejects.toMatchObject({
+      code: 'INVALID_DATABASE',
+    })
     expect(await db.meta.count()).toBe(0)
   })
 })
