@@ -95,3 +95,45 @@ test('keeps an archived list readable and says what deleting it removes', async 
     '“Japão” e seu item, com a foto se houver, serão excluídos. Esta ação não pode ser desfeita.',
   )
 })
+test('starts a finished list over for the next trip', async ({ page }) => {
+  await page.goto('/app')
+  await page.getByLabel('Seu nome').fill('Richard')
+  await page.getByRole('button', { name: 'Vamos começar' }).click()
+  await page.getByRole('button', { name: 'Nova lista' }).click()
+  await page.getByLabel('Nome da lista').fill('Mercado')
+  await page.getByRole('button', { name: 'Criar lista', exact: true }).click()
+  await page.getByRole('button', { name: 'Opções da lista' }).click()
+  await expect(
+    page.getByRole('button', { name: 'Recomeçar lista' }),
+  ).toHaveCount(0)
+  await page.getByRole('button', { name: 'Fechar', exact: true }).click()
+  await page.getByRole('button', { name: 'Adicionar', exact: true }).click()
+  for (const name of ['Café', 'Pão']) {
+    await page.getByLabel('Nome do item').fill(name)
+    await page.getByLabel('Nome do item').press('Enter')
+    await expect(page.getByLabel('Nome do item')).toHaveValue('')
+  }
+  await page.getByRole('button', { name: 'Fechar', exact: true }).click()
+  for (const name of ['Café', 'Pão'])
+    await page
+      .getByRole('checkbox', { name: `Comprar ${name}`, exact: true })
+      .click()
+  await expect(page.getByText('0 para comprar', { exact: false })).toBeVisible()
+  await page.getByRole('button', { name: 'Opções da lista' }).click()
+  await page.getByRole('button', { name: 'Recomeçar lista' }).click()
+  await expect(
+    page.getByRole('alertdialog', { name: 'Recomeçar esta lista?' }),
+  ).toContainText('Os 2 itens comprados voltam para “Quero comprar”')
+  await page.getByRole('button', { name: 'Recomeçar lista' }).click()
+  await expect(page.getByText('2 para comprar', { exact: false })).toBeVisible()
+  await expect(
+    page.getByRole('checkbox', { name: 'Comprar Café', exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Desfazer', exact: true }),
+  ).toHaveCount(0)
+  await page.getByRole('link', { name: 'Histórico', exact: true }).click()
+  await expect(
+    page.getByText('Lista recomeçada', { exact: true }),
+  ).toBeVisible()
+})

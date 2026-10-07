@@ -1,3 +1,4 @@
+import Dexie from 'dexie'
 import type { CartoonCheckDatabase } from '../../db/database'
 import {
   assertDatabaseReady,
@@ -8,13 +9,18 @@ import {
 import type { CommandContext } from '../../db/context'
 import { DataError } from '../../db/errors'
 import { appendHistory } from '../../db/history'
-import { createListSchema, listSchema, updateListSchema } from '../../db/models'
+import {
+  createListSchema,
+  itemSchema,
+  listSchema,
+  updateListSchema,
+} from '../../db/models'
 import type {
   CreateListInput,
   ShoppingList,
   UpdateListInput,
 } from '../../db/models'
-import { requireList, requireProfile } from '../../db/records'
+import { requireList, requireProfile, touchList } from '../../db/records'
 import { createId } from '../../lib/create-id'
 
 export async function createList(
@@ -152,6 +158,54 @@ export function undoArchiveChange(
     changed.id,
     changed.status !== 'archived',
     changed.revision,
+  )
+}
+
+/**
+ * Starts a list over for the next trip: every purchased item goes back to
+ * pending and loses the price paid last time. Planned prices, photos and the
+ * order of the items stay. Returns how many items changed.
+ */
+export async function restartList(
+  db: CartoonCheckDatabase,
+  context: CommandContext,
+  id: string,
+  expectedRevision: number,
+): Promise<number> {
+  assertDatabaseReady(db)
+  return db.transaction(
+    'rw',
+    [db.meta, db.lists, db.items, db.history],
+    async () => {
+      await assertDataset(db, context)
+      const list = await requireList(db, id, true)
+      assertRevision(list.revision, expectedRevision)
+      const purchased = await db.items
+        .where('[listId+status+purchasedAt]')
+        .between(
+          [id, 'purchased', Dexie.minKey],
+          [id, 'purchased', Dexie.maxKey],
+        )
+        .toArray()
+      if (purchased.length === 0) return 0
+      let time = updatedTime(list.updatedAt)
+      for (const item of purchased) time = Math.max(time, item.updatedAt + 1)
+      await db.items.bulkPut(
+        purchased.map((item) =>
+          itemSchema.parse({
+            ...item,
+            status: 'pending',
+            purchasedAt: null,
+            paidPriceMinor: null,
+            updatedAt: time,
+            revision: item.revision + 1,
+          }),
+        ),
+      )
+      const restarted = await touchList(db, list, time)
+      await appendHistory(db, 'list_restarted', restarted, time)
+      return purchased.length
+    },
   )
 }
 

@@ -172,6 +172,7 @@ export const historyActions = [
   'list_reactivated',
   'list_deleted',
   'list_completed',
+  'list_restarted',
   'item_added',
   'item_purchased',
   'item_purchase_undone',

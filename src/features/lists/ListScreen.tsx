@@ -8,6 +8,7 @@ import {
   Trash2,
   Pencil,
   ArchiveRestore,
+  RotateCcw,
 } from 'lucide-react'
 import { useRuntime } from '../../app/context'
 import { useFeedback } from '../../app/feedback-context'
@@ -17,7 +18,13 @@ import { EmptyState } from '../../components/EmptyState'
 import { ProgressMeter } from '../../components/ProgressMeter'
 import { useTask } from '../../hooks/useTask'
 import { getListSummary } from './queries'
-import { archiveList, deleteList, reactivateList } from './commands'
+import {
+  archiveList,
+  deleteList,
+  reactivateList,
+  restartList,
+} from './commands'
+import { celebrations } from '../../celebrations/engine'
 import { ListEditor } from './ListEditor'
 import type { ShoppingList } from '../../db/models'
 import styles from '../../app/layout.module.css'
@@ -38,8 +45,9 @@ export function ListScreen() {
   const [menu, setMenu] = useState(false)
   const [editing, setEditing] = useState<ShoppingList | null>(null)
   const [deleting, setDeleting] = useState<ShoppingList | null>(null)
+  const [restarting, setRestarting] = useState(false)
   const { pending, error, run } = useTask()
-  const { show } = useFeedback()
+  const { show, dismiss } = useFeedback()
   useDocumentTitle(summary === null ? 'Lista não encontrada' : null)
   if (summary === undefined) return <p role="status">Abrindo lista…</p>
   if (summary === null)
@@ -118,6 +126,18 @@ export function ListScreen() {
                 Editar lista
               </CartoonButton>
             )}
+            {list.status === 'active' && purchasedCount > 0 && (
+              <CartoonButton
+                variant="quiet"
+                onClick={() => {
+                  setMenu(false)
+                  setRestarting(true)
+                }}
+              >
+                <RotateCcw size={20} />
+                Recomeçar lista
+              </CartoonButton>
+            )}
             <CartoonButton
               variant="quiet"
               disabled={pending}
@@ -174,6 +194,54 @@ export function ListScreen() {
             setSearch(search, { replace: true })
           }}
         />
+      )}
+      {restarting && (
+        <BottomSheet
+          open
+          onOpenChange={(open) => {
+            if (!open && !pending) setRestarting(false)
+          }}
+          title="Recomeçar esta lista?"
+          alert
+          description={`${
+            purchasedCount === 1
+              ? 'O item comprado volta'
+              : `Os ${String(purchasedCount)} itens comprados voltam`
+          } para “Quero comprar” e o preço pago é apagado. Fotos, notas, preços planejados e o histórico continuam guardados.`}
+        >
+          <div className="stack">
+            <CartoonButton
+              variant="quiet"
+              onClick={() => {
+                setRestarting(false)
+              }}
+            >
+              Manter como está
+            </CartoonButton>
+            <CartoonButton
+              disabled={pending}
+              onClick={() => {
+                void run(
+                  () => restartList(db, context, list.id, list.revision),
+                  () => {
+                    celebrations.cancel()
+                    dismiss()
+                    setRestarting(false)
+                    show('Lista recomeçada. Bora de novo!')
+                  },
+                )
+              }}
+            >
+              <RotateCcw size={20} />
+              Recomeçar lista
+            </CartoonButton>
+            {error && (
+              <p className="error" role="alert">
+                {error}
+              </p>
+            )}
+          </div>
+        </BottomSheet>
       )}
       {deleting && (
         <BottomSheet

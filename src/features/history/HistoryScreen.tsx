@@ -13,6 +13,7 @@ const labels: Record<HistoryEntry['action'], string> = {
   list_reactivated: 'Lista reativada',
   list_deleted: 'Lista excluída',
   list_completed: 'Lista completa 🎉',
+  list_restarted: 'Lista recomeçada',
   item_added: 'Item adicionado',
   item_purchased: 'Comprado ✨',
   item_purchase_undone: 'Compra desfeita',

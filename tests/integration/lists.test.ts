@@ -7,6 +7,7 @@ import {
 } from '../helpers/database'
 import {
   archiveList,
+  restartList,
   createList,
   deleteList,
   reactivateList,
@@ -25,6 +26,7 @@ import {
   listProgress,
 } from '../../src/features/lists/queries'
 import { getHistoryPage } from '../../src/features/history/queries'
+import { getItemIds } from '../../src/features/items/queries'
 
 describe('shopping list commands', () => {
   it('rejects deletion confirmed against an obsolete list revision', async () => {
@@ -110,6 +112,54 @@ describe('shopping list commands', () => {
     expect(listProgress(199, 200)).toBe(99)
     expect(listProgress(1, 500)).toBe(1)
     expect(listProgress(200, 200)).toBe(100)
+  })
+
+  it('starts a list over without losing its items, plans or history', async () => {
+    const { db, context } = await shoppingDatabase()
+    const list = await createList(db, context, { name: 'Mercado' })
+    const coffee = await addItem(db, context, list.id, {
+      name: 'Café',
+      plannedPriceMinor: 1500,
+      paidPriceMinor: 1390,
+      expectedCurrency: 'BRL',
+    })
+    const bread = await addItem(db, context, list.id, { name: 'Pão' })
+    const fruit = await addItem(db, context, list.id, { name: 'Frutas' })
+    await setPurchased(db, context, coffee.id, true)
+    await setPurchased(db, context, bread.id, true)
+    const current = await db.lists.get(list.id)
+    await expect(
+      restartList(db, context, list.id, list.revision),
+    ).rejects.toMatchObject({ code: 'CONFLICT' })
+    expect(
+      await restartList(db, context, list.id, current?.revision ?? 0),
+    ).toBe(2)
+    expect(await getItemIds(db, list.id, 'pending')).toEqual([
+      coffee.id,
+      bread.id,
+      fruit.id,
+    ])
+    expect(await db.items.get(coffee.id)).toMatchObject({
+      status: 'pending',
+      purchasedAt: null,
+      plannedPriceMinor: 1500,
+      paidPriceMinor: null,
+      revision: coffee.revision + 2,
+    })
+    expect(await getListSummary(db, list.id)).toMatchObject({
+      pendingCount: 3,
+      purchasedCount: 0,
+      progress: 0,
+    })
+    expect((await getHistoryPage(db, 0, list.id))[0]).toMatchObject({
+      action: 'list_restarted',
+      itemId: null,
+    })
+    const again = await db.lists.get(list.id)
+    expect(await restartList(db, context, list.id, again?.revision ?? 0)).toBe(
+      0,
+    )
+    expect((await db.lists.get(list.id))?.revision).toBe(again?.revision)
   })
 
   it('undoes archiving and reactivation only while the list is unchanged', async () => {
