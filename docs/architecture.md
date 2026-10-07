@@ -46,6 +46,10 @@ and zero is a valid price. Quantity never multiplies a price.
 - **Ordering.** Each change is timestamped after the previous one, so order is
   stable even within one millisecond or after the clock moves back.
 
+Starting a list over returns every purchased item to pending in one
+transaction and clears the price paid; it is confirmed first because it has no
+undo.
+
 Buying is explicit and idempotent. Only buying the last pending item of a
 non-empty list records a completion; deleting it does not.
 

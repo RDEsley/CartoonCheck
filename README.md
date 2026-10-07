@@ -8,18 +8,20 @@ stays on your device and keeps working offline.
 
 The interface is in Brazilian Portuguese.
 
+**Live app:** <https://cartooncheck.vercel.app>
+
 <p>
   <img src="docs/screenshots/landing.png" alt="Landing page with the interactive check demo" width="19%" />
   <img src="docs/screenshots/list.png" alt="A list with progress, totals and pending items" width="19%" />
   <img src="docs/screenshots/item-details.png" alt="Item details sheet with price, note and store" width="19%" />
-  <img src="docs/screenshots/themes-sakura.png" alt="Theme selection in the Sakura theme" width="19%" />
-  <img src="docs/screenshots/home-night.png" alt="Home screen in the Night Cartoon theme" width="19%" />
+  <img src="docs/screenshots/themes.png" alt="The six themes, with Candy selected" width="19%" />
+  <img src="docs/screenshots/home-space.png" alt="Home screen in the Space theme" width="19%" />
 </p>
 
 ## What it does
 
-- **Lists**: create, edit, archive, reactivate and delete, each with an emoji
-  and a currency.
+- **Lists**: create, edit, archive, reactivate and delete, each with an icon
+  and a currency. A finished list can be started over for the next trip.
 - **Quick add**: only a name is required, and the field stays ready for the
   next item.
 - **Check and celebrate**: a drawn check, a short particle burst, and a larger
@@ -31,7 +33,8 @@ The interface is in Brazilian Portuguese.
 - **Manual exchange rate**: an approximate conversion to a second currency,
   with exact arithmetic. No rates are fetched from the internet.
 - **History**: a readable log of what was added, bought, undone and removed.
-- **Three themes**: Comic Pop, Sakura and Night Cartoon.
+- **Six themes**: Comic Pop, Sakura, Night Cartoon, Candy, Doodle and Space,
+  plus ten stickers for the profile.
 - **Backup and restore**: one file with all data and photos, validated before
   anything is replaced.
 - **Installable and offline**: a PWA with guarded updates that never reload
@@ -115,7 +118,7 @@ More detail is in [docs/architecture.md](docs/architecture.md).
 ## Quality
 
 **Accessibility.** The target is WCAG 2.2 AA. An automated axe audit covers
-every screen and dialog in the three themes. Separate tests cover keyboard
+every screen and dialog in the six themes. Separate tests cover keyboard
 use, focus after each action, reduced motion and seven viewport sizes from
 320 px to desktop, including landscape. No screen reader session on a real
 device was performed.

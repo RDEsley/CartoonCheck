@@ -4,6 +4,33 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-10-07
+
+### Added
+
+- Three themes: Candy, Doodle and Space, each with its own celebration
+  particles.
+- Five more profile stickers and a grid of suggested icons for lists.
+- Start a list over: purchased items go back to pending for the next trip.
+- Items show that their name opens the details.
+
+### Changed
+
+- Spacing follows a single scale and navigation uses the same chevron
+  everywhere.
+- The main action is docked above the navigation on the home screen too, over
+  a solid band, so content no longer shows between the bars.
+- The save button and its error stay in view in long sheets.
+- File fields use the app's own buttons instead of the native control.
+- The offline status moved from the top of every screen to the settings.
+
+### Fixed
+
+- The draft notice no longer appears behind the form that is being edited.
+
+Backups made by this version may use the new themes and stickers and are not
+accepted by 0.1.0.
+
 ## [0.1.0] - 2026-10-06
 
 First public version.
@@ -33,4 +60,5 @@ First public version.
 - Not yet tested on physical Android or iOS devices.
 - Automated tests cover Chromium only.
 
+[0.2.0]: https://github.com/RDEsley/CartoonCheck/releases/tag/v0.2.0
 [0.1.0]: https://github.com/RDEsley/CartoonCheck/releases/tag/v0.1.0
