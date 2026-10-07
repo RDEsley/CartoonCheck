@@ -84,6 +84,11 @@ label {
   outline: 3px solid var(--focus);
   outline-offset: 4px;
 }
+/* A screen title takes focus only so that assistive technology announces the
+   new screen. It is not a control, so it never shows the focus ring. */
+h1[tabindex='-1']:focus {
+  outline: none;
+}
 ::selection {
   color: var(--on-accent);
   background: var(--accent);

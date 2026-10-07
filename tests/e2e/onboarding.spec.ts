@@ -27,3 +27,15 @@ test('creates a local profile through the interface and keeps it after reopening
     ),
   ).toBe(true)
 })
+test('opens the app without a focus ring around the screen title', async ({
+  page,
+}) => {
+  await page.goto('/app')
+  await page.getByLabel('Seu nome').fill('Richard Oliveira')
+  await page.getByRole('button', { name: 'Vamos começar' }).click()
+  await page.reload()
+  const title = page.getByRole('heading', { level: 1 })
+  await expect(title).toHaveText('Olá, Richard Oliveira 👋')
+  await expect(title).toBeFocused()
+  await expect(title).toHaveCSS('outline-style', 'none')
+})

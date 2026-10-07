@@ -20,6 +20,11 @@ test('supports keyboard entry, titled screens and focus after sheets, purchases 
   await page.getByLabel('Nome da lista').fill('Japão')
   await page.getByLabel('Nome da lista').press('Enter')
   await expect(page.getByRole('heading', { level: 1 })).toBeFocused()
+  // The title is focused for assistive technology and shows no focus ring.
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCSS(
+    'outline-style',
+    'none',
+  )
   await expect(page).toHaveTitle('Japão · Cartoon Check')
   const add = page.getByRole('button', { name: 'Adicionar', exact: true })
   await add.focus()
