@@ -1,7 +1,7 @@
 {
   "name": "cartoon-check",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Simple shopping lists with a playful cartoon identity.",
   "license": "MIT",
   "type": "module",
