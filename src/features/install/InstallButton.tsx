@@ -1,6 +1,6 @@
 import { useState, useSyncExternalStore } from 'react'
 import { Link } from 'react-router'
-import { Download, Share2 } from 'lucide-react'
+import { ChevronRight, Download, Share2 } from 'lucide-react'
 import { useRuntime } from '../../app/context'
 import { CartoonButton } from '../../components/CartoonButton'
 import { BottomSheet } from '../../components/BottomSheet'
@@ -68,7 +68,8 @@ export function InstallButton() {
                       setInstructions(false)
                     }}
                   >
-                    Exportar meus dados antes de instalar →
+                    Exportar meus dados antes de instalar
+                    <ChevronRight size={18} aria-hidden="true" />
                   </Link>
                 )}
               </>

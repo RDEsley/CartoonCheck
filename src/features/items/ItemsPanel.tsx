@@ -11,6 +11,7 @@ import { QuickAdd } from './QuickAdd'
 import { ItemEditor } from './ItemEditor'
 import { ItemDetails } from './ItemDetails'
 import styles from './items.module.css'
+import layout from '../../app/layout.module.css'
 import { useSearchParams } from 'react-router'
 // Long lists are revealed in steps: only the cards near the screen exist,
 // which keeps opening and checking fast with hundreds of items.
@@ -159,7 +160,7 @@ export function ItemsPanel({
       </section>
       {list.status === 'active' && (
         <CartoonButton
-          className={styles.addButton}
+          className={layout.dockAction}
           data-add-item
           onClick={() => {
             setAdding(true)

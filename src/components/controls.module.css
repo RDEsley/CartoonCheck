@@ -3,7 +3,7 @@
   min-height: 48px;
   padding: 0;
   border: 0;
-  border-radius: 13px 16px 12px 15px;
+  border-radius: var(--radius-control);
   background: none;
   color: inherit;
 }
@@ -12,9 +12,9 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  gap: 9px;
+  gap: var(--space-2);
   min-height: 48px;
-  padding: 12px 20px;
+  padding: var(--space-3) var(--space-4);
   font-weight: 800;
   border: 2px solid var(--ink);
   border-radius: inherit;
@@ -101,7 +101,8 @@
   border: 2px solid var(--ink);
   border-bottom: 0;
   border-radius: 26px 29px 0 0;
-  padding: 24px 24px calc(28px + env(safe-area-inset-bottom));
+  padding: var(--space-5) var(--space-5)
+    calc(var(--space-5) + env(safe-area-inset-bottom));
   animation: sheet var(--playful) cubic-bezier(0.22, 1, 0.36, 1);
 }
 .sheetHeading {
@@ -116,10 +117,10 @@
 }
 .empty {
   text-align: center;
-  padding: 44px 16px;
+  padding: var(--space-7) var(--space-4);
 }
 .empty h2 {
-  margin-top: 20px;
+  margin-top: var(--space-4);
   font-size: 24px;
 }
 .progress {

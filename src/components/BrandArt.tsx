@@ -208,6 +208,15 @@ export function BrandArt({
           />
         </>
       )}
+      {kind === 'bolt' && (
+        <path
+          d="M58 13 27 55h19l-7 33 35-47H55Z"
+          fill="var(--accent)"
+          stroke="var(--ink)"
+          strokeWidth="3.5"
+          strokeLinejoin="round"
+        />
+      )}
     </svg>
   )
 }

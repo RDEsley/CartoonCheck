@@ -19,6 +19,7 @@ export const avatarPresets = [
   'flower',
   'rocket',
   'cloud',
+  'bolt',
 ] as const
 
 const id = z.uuid()

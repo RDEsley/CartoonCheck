@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Link } from 'react-router'
-import { ArrowUpRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { useRuntime } from '../../app/context'
 import { ProgressMeter } from '../../components/ProgressMeter'
 import { getListSummary } from './queries'
@@ -23,7 +23,7 @@ export function ListCard({ id }: { id: string }) {
         </p>
         <ProgressMeter value={progress} label={`Progresso de ${list.name}`} />
       </div>
-      <ArrowUpRight size={22} />
+      <ChevronRight size={22} aria-hidden="true" />
     </Link>
   )
 }

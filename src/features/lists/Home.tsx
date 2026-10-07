@@ -46,9 +46,7 @@ export function Home({ archived = false }: { archived?: boolean }) {
           <BrandArt kind={profile?.avatarPresetId ?? 'bag'} size={72} />
         )}
       </div>
-      {!archived && (
-        <h2 style={{ fontSize: 20, marginBottom: 24 }}>Suas listas</h2>
-      )}
+      {!archived && <h2 className={styles.sectionTitle}>Suas listas</h2>}
       {ids === undefined ? (
         <p role="status">Abrindo listas…</p>
       ) : ids.length === 0 ? (
@@ -73,7 +71,7 @@ export function Home({ archived = false }: { archived?: boolean }) {
       )}
       {!archived && (
         <CartoonButton
-          style={{ width: '100%', marginTop: 28 }}
+          className={styles.dockAction}
           onClick={() => {
             setCreating(true)
           }}

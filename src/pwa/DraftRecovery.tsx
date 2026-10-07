@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { useNavigate } from 'react-router'
 import { useRuntime } from '../app/context'
 import { CartoonButton } from '../components/CartoonButton'
+import styles from '../app/layout.module.css'
 import {
   discardDraft,
   getDraftSnapshot,
@@ -13,16 +14,10 @@ export function DraftRecovery() {
   const state = useSyncExternalStore(subscribeDraft, getDraftSnapshot)
   const navigate = useNavigate()
   if (!state.draft && !state.failed) return null
+  // The form that owns the draft is open: offering to resume it would be noise.
+  if (state.editing && !state.failed) return null
   return (
-    <aside
-      style={{
-        border: '2px solid var(--ink)',
-        borderRadius: 14,
-        padding: 16,
-        marginBottom: 24,
-      }}
-      aria-label="Rascunho de edição"
-    >
+    <aside className={styles.notice} aria-label="Rascunho de edição">
       <p className="muted">
         {state.failed
           ? 'Não conseguimos guardar o rascunho. Salve ou descarte a edição antes de atualizar.'

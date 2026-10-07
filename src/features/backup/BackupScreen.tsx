@@ -40,7 +40,7 @@ export function BackupScreen() {
       </div>
       <div className="stack">
         <div className={styles.card}>
-          <h2 style={{ fontSize: 22 }}>Exportar meus dados</h2>
+          <h2>Exportar meus dados</h2>
           <p className="muted">
             Guarde o arquivo em um lugar seguro. Ele contém seus dados pessoais
             e não é protegido por senha.
@@ -59,7 +59,7 @@ export function BackupScreen() {
           </CartoonButton>
         </div>
         <div className={styles.card}>
-          <h2 style={{ fontSize: 22 }}>Restaurar backup</h2>
+          <h2>Restaurar backup</h2>
           <p className="muted">
             Primeiro verificamos o arquivo. A restauração substitui todos os
             dados atuais deste dispositivo; exporte uma cópia antes.

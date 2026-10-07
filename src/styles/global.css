@@ -119,7 +119,7 @@ small {
 .stack {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 20px;
+  gap: var(--space-4);
 }
 .row {
   display: flex;
@@ -128,6 +128,12 @@ small {
   flex-wrap: wrap;
 }
 .muted {
+  color: var(--muted);
+}
+/* Secondary text under a control or at the end of a card. */
+.hint {
+  margin: 0;
+  font-size: 0.875rem;
   color: var(--muted);
 }
 .text-link {

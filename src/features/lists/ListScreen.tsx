@@ -64,11 +64,7 @@ export function ListScreen() {
   const { list, pendingCount, purchasedCount, progress } = summary
   return (
     <MotionBoundary>
-      <Link
-        to="/app"
-        className="row"
-        style={{ marginBottom: 24, minHeight: 48 }}
-      >
+      <Link to="/app" className={styles.back}>
         <ArrowLeft size={20} />
         Suas listas
       </Link>

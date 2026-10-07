@@ -12,7 +12,29 @@ import { DiscardDialog } from '../../components/DiscardDialog'
 import { DraftConflict } from '../../pwa/DraftConflict'
 import { discardDraft, initialDraftField } from '../../pwa/drafts'
 import { requestPersistence } from '../../pwa/storage'
+import layout from '../../app/layout.module.css'
 
+// Suggestions for the most common kinds of list; any emoji can be typed instead.
+const listIcons = [
+  '🛒',
+  '🎁',
+  '🏠',
+  '✈️',
+  '🇯🇵',
+  '👟',
+  '👕',
+  '🎉',
+  '📚',
+  '💊',
+  '🐾',
+  '🍽️',
+  '👶',
+  '💻',
+  '🎮',
+  '🌱',
+  '🧰',
+  '✦',
+]
 export function ListEditor({
   list: sourceList = null,
   close,
@@ -133,11 +155,16 @@ export function ListEditor({
               placeholder="Japão, Mercado, Presentes…"
             />
           </label>
-          <div className="row">
-            {['🇯🇵', '🛒', '🎁', '🏠', '👟', '✦'].map((value) => (
-              <CartoonButton
+          <div
+            className={layout.choices}
+            role="group"
+            aria-label="Ícone da lista"
+          >
+            {listIcons.map((value) => (
+              <button
                 key={value}
-                variant={emoji === value ? 'secondary' : 'quiet'}
+                type="button"
+                className={layout.choice}
                 aria-label={`Usar ${value}`}
                 aria-pressed={emoji === value}
                 onClick={() => {
@@ -145,11 +172,11 @@ export function ListEditor({
                 }}
               >
                 {value}
-              </CartoonButton>
+              </button>
             ))}
           </div>
           <label>
-            Emoji
+            Ou digite outro emoji
             <input
               value={emoji}
               maxLength={16}

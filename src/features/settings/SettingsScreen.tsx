@@ -1,4 +1,6 @@
 import { Link } from 'react-router'
+import { ChevronRight } from 'lucide-react'
+import { OfflineStatus } from '../../pwa/PwaStatus'
 import { useEffect, useRef, useState } from 'react'
 import type { PreferencesInput, Profile } from '../../db/models'
 import { useRuntime } from '../../app/context'
@@ -77,19 +79,20 @@ export function SettingsScreen() {
       </div>
       <div className="stack">
         <div className={styles.card}>
-          <h2 style={{ fontSize: 20 }}>Na sua tela de início</h2>
+          <h2>Na sua tela de início</h2>
           <p className="muted">Um toque para abrir suas listas.</p>
           <InstallButton />
+          <OfflineStatus />
         </div>
         <Link
           to="/app/settings/profile"
-          className={styles.card}
-          style={{ textDecoration: 'none' }}
+          className={[styles.card, styles.linkCard].join(' ')}
         >
-          <strong>Seu perfil</strong>
-          <p className="muted" style={{ margin: '8px 0 0' }}>
-            {profile.name} · Editar nome e avatar →
-          </p>
+          <span>
+            <strong>Seu perfil</strong>
+            <p className="muted">{profile.name} · Editar nome e sticker</p>
+          </span>
+          <ChevronRight size={22} aria-hidden="true" />
         </Link>
         <fieldset className={settingsStyles.themes}>
           <legend>Escolha seu tema</legend>
@@ -122,7 +125,7 @@ export function SettingsScreen() {
           ))}
         </fieldset>
         <div className={styles.card}>
-          <h2 style={{ fontSize: 20 }}>Sensação do check</h2>
+          <h2>Sensação do check</h2>
           <label className={settingsStyles.toggle}>
             <input
               type="checkbox"
@@ -133,7 +136,7 @@ export function SettingsScreen() {
             />
             Reduzir animações
           </label>
-          <p className="muted" style={{ fontSize: 14 }}>
+          <p className="hint">
             A preferência do seu sistema também é respeitada.
           </p>
           <label className={settingsStyles.toggle}>
@@ -146,29 +149,27 @@ export function SettingsScreen() {
             />
             Vibração sutil
           </label>
-          <p className="muted" style={{ fontSize: 14, marginBottom: 0 }}>
-            Quando o dispositivo permitir.
-          </p>
+          <p className="hint">Quando o dispositivo permitir.</p>
         </div>
         <Link
           to="/app/settings/backup"
-          className={styles.card}
-          style={{ textDecoration: 'none' }}
+          className={[styles.card, styles.linkCard].join(' ')}
         >
-          <strong>Backup dos seus dados</strong>
-          <p className="muted" style={{ margin: '8px 0 0' }}>
-            Exportar e restaurar →
-          </p>
+          <span>
+            <strong>Backup dos seus dados</strong>
+            <p className="muted">Exportar e restaurar</p>
+          </span>
+          <ChevronRight size={22} aria-hidden="true" />
         </Link>
         <div className={styles.card}>
-          <h2 style={{ fontSize: 20 }}>Privado por natureza</h2>
+          <h2>Privado por natureza</h2>
           <p className="muted">
             Listas e fotos ficam neste dispositivo. Não temos conta, servidor de
             dados ou rastreamento. Limpar os dados do navegador remove suas
             listas; guarde um backup em um lugar seguro.
           </p>
           {storage && (
-            <p className="muted" style={{ fontSize: 14 }}>
+            <p className="hint" style={{ marginBottom: 16 }}>
               {storage.usage !== null &&
                 `O Cartoon Check ocupa ${formatBytes(storage.usage)} neste dispositivo, contando o próprio aplicativo. `}
               {storage.persistence === 'persisted'
@@ -197,7 +198,7 @@ export function SettingsScreen() {
               Proteger armazenamento local
             </CartoonButton>
           )}
-          <p className="muted" style={{ fontSize: 14, margin: '16px 0 0' }}>
+          <p className="hint" style={{ marginTop: 16 }}>
             Versão {__APP_VERSION__}
           </p>
         </div>

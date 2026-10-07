@@ -10,4 +10,5 @@ export const avatarLabels: Record<Avatar, string> = {
   flower: 'Flor',
   rocket: 'Foguete',
   cloud: 'Nuvem',
+  bolt: 'Raio',
 }

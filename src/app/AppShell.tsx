@@ -31,6 +31,7 @@ export function AppShell() {
           <Outlet />
         </Suspense>
       </main>
+      <div className={styles.dockFade} aria-hidden="true" />
       <nav aria-label="Navegação principal" className={styles.nav}>
         <NavLink to="/app" end>
           <House size={22} />

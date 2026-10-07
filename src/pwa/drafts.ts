@@ -29,10 +29,27 @@ try {
 } catch {
   failed = true
 }
-let snapshot = { draft: current, failed }
+const open = new Set<string>()
+function read() {
+  return {
+    draft: current,
+    failed,
+    editing: current !== null && open.has(current.scope),
+  }
+}
+let snapshot = read()
 function notify() {
-  snapshot = { draft: current, failed }
+  snapshot = read()
   for (const listener of listeners) listener()
+}
+/** Marks a form as open until the returned function is called. */
+export function beginEditing(scope: string) {
+  open.add(scope)
+  notify()
+  return () => {
+    open.delete(scope)
+    notify()
+  }
 }
 export function subscribeDraft(listener: () => void) {
   listeners.add(listener)

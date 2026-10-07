@@ -1,6 +1,7 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { useRuntime } from '../app/context'
 import {
+  beginEditing,
   checkpointDraft,
   discardDraft,
   getDraftSnapshot,
@@ -29,6 +30,7 @@ export function useFormDraft(
     draft?.scope === scope &&
     (draft.epoch !== context.datasetEpoch || draft.revision !== revision)
   const conflicted = stale && !replaceStale
+  useEffect(() => beginEditing(scope), [scope])
   const serialized = JSON.stringify(fields)
   const dirty = serialized !== JSON.stringify(original)
   useEffect(() => {

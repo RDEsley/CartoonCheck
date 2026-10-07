@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { memo, useRef } from 'react'
+import { ChevronRight } from 'lucide-react'
 import * as m from 'motion/react-m'
 import { duration } from '../../animations/tokens'
 import { useCelebrations } from '../../celebrations/context'
@@ -93,19 +94,22 @@ export const ShoppingItemCard = memo(function ShoppingItemCard({
           edit(item)
         }}
       >
-        <span>{item.name}</span>
-        {(purchased ? item.paidPriceMinor : item.plannedPriceMinor) !==
-          null && (
-          <small className="muted">
-            {formatPrice(
-              (purchased ? item.paidPriceMinor : item.plannedPriceMinor) ?? 0,
-              currency,
-            )}
-          </small>
-        )}
-        {item.quantity > 1 && (
-          <small className="muted">Quantidade: {item.quantity}</small>
-        )}
+        <span className={styles.itemText}>
+          <span>{item.name}</span>
+          {(purchased ? item.paidPriceMinor : item.plannedPriceMinor) !==
+            null && (
+            <small className="muted">
+              {formatPrice(
+                (purchased ? item.paidPriceMinor : item.plannedPriceMinor) ?? 0,
+                currency,
+              )}
+            </small>
+          )}
+          {item.quantity > 1 && (
+            <small className="muted">Quantidade: {item.quantity}</small>
+          )}
+        </span>
+        <ChevronRight size={20} aria-hidden="true" />
       </button>
       {error && (
         <p className="error" role="alert">
