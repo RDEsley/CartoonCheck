@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-10-07
+
+### Fixed
+
+- The screen title no longer shows a focus ring when the app opens.
+
 ## [0.2.0] - 2026-10-07
 
 ### Added
@@ -60,5 +66,6 @@ First public version.
 - Not yet tested on physical Android or iOS devices.
 - Automated tests cover Chromium only.
 
+[0.2.1]: https://github.com/RDEsley/CartoonCheck/releases/tag/v0.2.1
 [0.2.0]: https://github.com/RDEsley/CartoonCheck/releases/tag/v0.2.0
 [0.1.0]: https://github.com/RDEsley/CartoonCheck/releases/tag/v0.1.0
