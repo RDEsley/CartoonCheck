@@ -39,6 +39,9 @@ The interface is in Brazilian Portuguese.
   anything is replaced.
 - **Installable and offline**: a PWA with guarded updates that never reload
   over unsaved work.
+- **Support, terms and privacy**: public pages with a voluntary Pix donation
+  to the developer, the terms of use and the privacy policy. Donating unlocks
+  nothing: the app is the same for everyone.
 
 Out of scope for this version: accounts, sync, sharing, budgets, categories,
 swipe gestures, sound and notifications.
@@ -53,6 +56,10 @@ traffic is the download of the app's own files.
 
 Clearing the browser's site data removes your lists. A backup file is the way
 to keep a copy; it contains your data unencrypted, so store it somewhere safe.
+
+The support page builds a static Pix code (the Central Bank's BR Code) and its
+QR code in the browser. The payment happens in the donor's bank app, so the app
+never learns who donated or how much, and there is no donation counter.
 
 ## Getting started
 
