@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-10-10
+
+### Added
+
+- A support page with a voluntary Pix donation to the developer: a suggested or
+  free amount, a QR code and a code to copy. Donating unlocks nothing, and the
+  app never learns who donated.
+- Terms of use and a privacy policy, public and linked from the landing page
+  and the settings.
+
 ## [0.2.1] - 2026-10-07
 
 ### Fixed
