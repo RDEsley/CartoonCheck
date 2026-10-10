@@ -84,3 +84,15 @@
     height: 56px;
   }
 }
+/* Links to the terms and the privacy policy, under the last card. */
+.legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-5);
+  margin: 0;
+}
+.legal a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+}

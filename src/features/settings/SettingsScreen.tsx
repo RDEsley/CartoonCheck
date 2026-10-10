@@ -202,6 +202,20 @@ export function SettingsScreen() {
             Versão {__APP_VERSION__}
           </p>
         </div>
+        <Link
+          to="/app/about/support"
+          className={[styles.card, styles.linkCard].join(' ')}
+        >
+          <span>
+            <strong>Apoiar o Cartoon Check</strong>
+            <p className="muted">Gratuito e sem anúncios. Doe se quiser.</p>
+          </span>
+          <ChevronRight size={22} aria-hidden="true" />
+        </Link>
+        <p className={settingsStyles.legal}>
+          <Link to="/app/about/terms">Termos de uso</Link>
+          <Link to="/app/about/privacy">Política de privacidade</Link>
+        </p>
         {error && (
           <p className="error" role="alert">
             {error}

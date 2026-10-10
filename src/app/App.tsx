@@ -28,6 +28,16 @@ const ProfileScreen = lazy(async () => ({
 const BackupScreen = lazy(async () => ({
   default: (await import('../features/backup/BackupScreen')).BackupScreen,
 }))
+const SupportScreen = lazy(async () => ({
+  default: (await import('../features/about/SupportScreen')).SupportScreen,
+}))
+const TermsScreen = lazy(async () => ({
+  default: (await import('../features/about/TermsScreen')).TermsScreen,
+}))
+const PrivacyScreen = lazy(async () => ({
+  default: (await import('../features/about/PrivacyScreen')).PrivacyScreen,
+}))
+const opening = <p role="status">Abrindo…</p>
 
 export function App() {
   return (
@@ -47,6 +57,33 @@ export function App() {
                         <BackupScreen />
                       </Suspense>
                     </main>
+                  }
+                />
+                {/* Public pages. They live under /app, which the hosting and the
+                    service worker already serve, but outside the shell: no
+                    profile is needed to read them. */}
+                <Route
+                  path="/app/about/support"
+                  element={
+                    <Suspense fallback={opening}>
+                      <SupportScreen />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/app/about/terms"
+                  element={
+                    <Suspense fallback={opening}>
+                      <TermsScreen />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/app/about/privacy"
+                  element={
+                    <Suspense fallback={opening}>
+                      <PrivacyScreen />
+                    </Suspense>
                   }
                 />
                 <Route path="/app" element={<AppShell />}>

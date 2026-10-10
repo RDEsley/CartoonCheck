@@ -34,6 +34,16 @@ test('keeps the public and first-use screens accessible', async ({ page }) => {
   await audit(page, 'restore before onboarding')
   await page.goto('/caminho-que-nao-existe')
   await audit(page, 'not found')
+  await page.goto('/app/about/support')
+  await expect(page.getByRole('img', { name: 'QR Code do Pix' })).toBeVisible()
+  await audit(page, 'support')
+  await page.getByRole('button', { name: 'Outro valor' }).click()
+  await page.getByLabel('Valor em reais').fill('1.500')
+  await audit(page, 'support with a refused amount')
+  await page.getByRole('link', { name: 'Termos de uso' }).click()
+  await audit(page, 'terms')
+  await page.getByRole('link', { name: 'Privacidade', exact: true }).click()
+  await audit(page, 'privacy')
 })
 for (const theme of [
   'Comic Pop',
@@ -114,5 +124,10 @@ for (const theme of [
     await page.goto('/')
     await expect(page.locator('html')).toHaveAttribute('data-theme', /.+/)
     await audit(page, 'themed landing')
+    await page.getByRole('link', { name: 'Apoiar', exact: true }).click()
+    await expect(
+      page.getByRole('img', { name: 'QR Code do Pix' }),
+    ).toBeVisible()
+    await audit(page, 'themed support')
   })
 }

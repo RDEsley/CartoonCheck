@@ -128,6 +128,9 @@ export function Landing() {
       </div>
       <footer className={styles.footer}>
         <span>Cartoon Check · Feito para os pequenos checks.</span>
+        <Link to="/app/about/support">Apoiar</Link>
+        <Link to="/app/about/terms">Termos de uso</Link>
+        <Link to="/app/about/privacy">Privacidade</Link>
         <a
           href="https://github.com/RDEsley/CartoonCheck"
           target="_blank"
