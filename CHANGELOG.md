@@ -4,6 +4,22 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-10-10
+
+### Added
+
+- A donation invitation: a dismissible card from the third visit on and a
+  two-step sheet that opens by itself a single time, from the fifth visit on.
+  Dismissing the card opens the sheet once more and hides the card.
+- A thank-you on the support page after the Pix code is copied, and artwork on
+  the support page and the invitation.
+- A back link at the top of the support, terms and privacy pages.
+
+### Changed
+
+- The privacy policy now mentions the visit count kept on the device for the
+  invitation.
+
 ## [0.3.0] - 2026-10-10
 
 ### Added
