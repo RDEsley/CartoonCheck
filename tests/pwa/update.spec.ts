@@ -31,9 +31,7 @@ test('blocks updates while another tab is active and recovers an unsaved profile
     if (!registration) throw new Error('Registration missing')
     await registration.update()
   })
-  await page
-    .getByRole('button', { name: 'Atualizar Cartoon Check', exact: true })
-    .click()
+  await page.getByRole('button', { name: 'Atualizar', exact: true }).click()
   await expect(
     page.getByText(/Feche outras abas do Cartoon Check e tente novamente/),
   ).toBeVisible()
@@ -41,9 +39,7 @@ test('blocks updates while another tab is active and recovers an unsaved profile
   await other.close()
   await Promise.all([
     page.waitForEvent('load'),
-    page
-      .getByRole('button', { name: 'Atualizar Cartoon Check', exact: true })
-      .click(),
+    page.getByRole('button', { name: 'Atualizar', exact: true }).click(),
   ])
   await expect(page.getByLabel('Seu nome')).toHaveValue('Richard viagem')
   expect(await page.content()).toContain('cartoon-check-test-release-b')

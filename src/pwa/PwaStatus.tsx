@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react'
+import { X } from 'lucide-react'
 import { CartoonButton } from '../components/CartoonButton'
+import controls from '../components/controls.module.css'
 import styles from '../app/layout.module.css'
 import { applyUpdate, deferUpdate, getPwaStatus, subscribePwa } from './status'
 function offlineText(ready: boolean) {
@@ -26,22 +28,25 @@ export function PwaStatus() {
           {offer && (
             <>
               <strong>Uma nova versão está pronta.</strong>
+              {/* Dismissing lasts only for this session: the notice is back
+                  the next time the app is opened. */}
+              <button
+                type="button"
+                className={[controls.iconButton, styles.noticeClose].join(' ')}
+                aria-label="Dispensar aviso de atualização"
+                disabled={status.updating}
+                onClick={deferUpdate}
+              >
+                <X size={22} aria-hidden="true" />
+              </button>
               <div className="row" style={{ marginTop: 12 }}>
                 <CartoonButton
-                  variant="quiet"
                   busy={status.updating}
                   onClick={() => {
                     void applyUpdate()
                   }}
                 >
-                  {status.updating ? 'Atualizando…' : 'Atualizar Cartoon Check'}
-                </CartoonButton>
-                <CartoonButton
-                  variant="quiet"
-                  disabled={status.updating}
-                  onClick={deferUpdate}
-                >
-                  Depois
+                  {status.updating ? 'Atualizando…' : 'Atualizar'}
                 </CartoonButton>
               </div>
             </>

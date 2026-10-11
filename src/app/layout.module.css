@@ -168,6 +168,16 @@
   border-radius: 14px;
   padding: var(--space-4);
   margin-bottom: var(--space-5);
+  position: relative;
+}
+.notice:has(.noticeClose) > strong {
+  display: block;
+  padding-right: 48px;
+}
+.noticeClose {
+  position: absolute;
+  top: 2px;
+  right: 2px;
 }
 .lists {
   display: grid;
