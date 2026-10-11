@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router'
+import { ArrowLeft } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { useRuntime } from '../../app/context'
 import { Wordmark } from '../../components/BrandArt'
 import { PageHeading } from '../../components/PageHeading'
@@ -21,10 +22,27 @@ export function AboutPage({
   children: ReactNode
 }) {
   const { profile } = useRuntime()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const fallback = profile ? '/app/settings' : '/'
   return (
     <main className={[layout.onboarding, styles.page].join(' ')}>
       <Link to="/" aria-label="Cartoon Check: início">
         <Wordmark />
+      </Link>
+      {/* Goes back to where the person came from; a page opened directly has
+          no history inside the app, so the link itself is used. */}
+      <Link
+        to={fallback}
+        className={styles.back}
+        onClick={(event) => {
+          if (location.key === 'default') return
+          event.preventDefault()
+          void navigate(-1)
+        }}
+      >
+        <ArrowLeft size={20} aria-hidden="true" />
+        Voltar
       </Link>
       <PageHeading title={title} />
       {updated && <p className="hint">Última atualização: {legalUpdatedAt}</p>}
@@ -33,7 +51,7 @@ export function AboutPage({
         <Link to="/app/about/support">Apoiar</Link>
         <Link to="/app/about/terms">Termos de uso</Link>
         <Link to="/app/about/privacy">Privacidade</Link>
-        <Link to={profile ? '/app/settings' : '/'}>
+        <Link to={fallback}>
           {profile ? 'Voltar aos ajustes' : 'Voltar ao início'}
         </Link>
       </nav>
