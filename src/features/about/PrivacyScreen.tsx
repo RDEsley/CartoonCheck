@@ -25,7 +25,8 @@ export function PrivacyScreen() {
       </p>
       <p>
         O app instalado guarda também uma cópia de si mesmo para funcionar sem
-        internet.
+        internet. Ele conta, também só no aparelho, quantas vezes foi aberto,
+        apenas para mostrar o convite de apoio uma única vez.
       </p>
       <h2>3. Backups</h2>
       <p>
