@@ -4,6 +4,22 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-10-11
+
+### Added
+
+- A heart that thanks whoever declines the donation invitation.
+
+### Changed
+
+- The update notice has a single Update button and a close button in its
+  corner. Closing it lasts until the app is closed; it is back the next time
+  the app is opened.
+
+### Fixed
+
+- Links to the app now show a title, description and image when shared.
+
 ## [0.4.0] - 2026-10-10
 
 ### Added
