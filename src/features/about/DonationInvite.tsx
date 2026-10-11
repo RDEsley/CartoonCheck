@@ -4,7 +4,7 @@ import { ArrowLeft, HeartHandshake, X } from 'lucide-react'
 import { BottomSheet } from '../../components/BottomSheet'
 import { CartoonButton } from '../../components/CartoonButton'
 import controls from '../../components/controls.module.css'
-import { JarArt, WaveArt } from './DonationArt'
+import { HeartArt, WaveArt } from './DonationArt'
 import {
   cardAfterVisits,
   cardHidden,
@@ -132,7 +132,7 @@ export function DonationInvite() {
           title="Tudo bem, obrigado mesmo assim!"
           description="Fique à vontade para usar o Cartoon Check de graça, sempre que quiser. Saber que ele é útil já faz valer a pena."
         >
-          <JarArt className={styles.inviteArt} />
+          <HeartArt className={styles.inviteArt} />
           <p>
             Se um dia quiser apoiar, é só abrir{' '}
             <strong>Ajustes → Apoiar o Cartoon Check</strong>.
