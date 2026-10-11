@@ -30,6 +30,7 @@
     "dexie": "4.4.6",
     "dexie-react-hooks": "4.4.0",
     "fflate": "0.8.3",
+    "lottie-web": "5.13.0",
     "lucide-react": "1.52.0",
     "motion": "14.0.0",
     "qrcode-generator": "2.0.4",

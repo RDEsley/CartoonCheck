@@ -92,3 +92,64 @@
   min-height: 48px;
   font-weight: 700;
 }
+/* The donation invitation: a card at the foot of the app and a two-step sheet. */
+.supportCard {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-6);
+  padding: var(--space-3) var(--space-2) var(--space-3) var(--space-4);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.supportCard p {
+  display: grid;
+  margin: 0;
+}
+.supportCard a {
+  grid-column: 1 / 3;
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  font-weight: 700;
+}
+.supportCard button {
+  grid-row: 1;
+  grid-column: 3;
+}
+.inviteArt {
+  display: block;
+  width: 168px;
+  height: 146px;
+  margin: var(--space-3) auto;
+}
+.inviteArt img,
+.thanksArt img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.supportArt {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto;
+}
+.thanks {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+}
+.thanks p {
+  margin: 0;
+}
+.thanksArt {
+  display: block;
+  flex: none;
+  width: 84px;
+  height: 73px;
+}

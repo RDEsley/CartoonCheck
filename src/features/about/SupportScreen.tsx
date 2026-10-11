@@ -4,6 +4,7 @@ import { useFeedback } from '../../app/feedback-context'
 import { CartoonButton } from '../../components/CartoonButton'
 import layout from '../../app/layout.module.css'
 import { AboutPage } from './AboutPage'
+import { JarArt, WaveArt } from './DonationArt'
 import { PixQrCode } from './PixQrCode'
 import {
   donation,
@@ -11,6 +12,7 @@ import {
   formatDonation,
   parseDonation,
 } from './donation'
+import { settleInvite } from './invite'
 import styles from './about.module.css'
 
 type Choice = number | 'custom' | 'bank'
@@ -20,6 +22,7 @@ export function SupportScreen() {
   const [choice, setChoice] = useState<Choice>('bank')
   const [custom, setCustom] = useState('')
   const [error, setError] = useState('')
+  const [thanked, setThanked] = useState(false)
   const amount =
     choice === 'custom'
       ? parseDonation(custom)
@@ -42,6 +45,7 @@ export function SupportScreen() {
   )
   return (
     <AboutPage title="Apoiar o Cartoon Check">
+      <JarArt className={styles.supportArt} />
       <p>
         O Cartoon Check é gratuito, sem anúncios e sem conta, e vai continuar
         assim. Ele é feito por uma pessoa só, no tempo livre.
@@ -100,6 +104,8 @@ export function SupportScreen() {
             navigator.clipboard.writeText(code).then(
               () => {
                 setError('')
+                setThanked(true)
+                settleInvite()
                 show('Código Pix copiado!')
               },
               () => {
@@ -117,6 +123,17 @@ export function SupportScreen() {
           <p className="error" role="alert">
             {error}
           </p>
+        )}
+        {thanked && (
+          <div className={styles.thanks} role="status">
+            <WaveArt className={styles.thanksArt} />
+            <p>
+              <strong>Muito obrigado!</strong> Agora é só colar o código no Pix
+              do seu banco. O Cartoon Check não fica sabendo se o pagamento foi
+              feito, então o agradecimento já fica aqui: sua ajuda faz diferença
+              de verdade.
+            </p>
+          </div>
         )}
         <ol className={styles.steps}>
           <li>

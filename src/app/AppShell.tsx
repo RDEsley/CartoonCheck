@@ -6,6 +6,7 @@ import { Wordmark } from '../components/BrandArt'
 import styles from './layout.module.css'
 import { PwaStatus } from '../pwa/PwaStatus'
 import { DraftRecovery } from '../pwa/DraftRecovery'
+import { DonationInvite } from '../features/about/DonationInvite'
 export function AppShell() {
   const { profile } = useRuntime()
   const location = useLocation()
@@ -30,6 +31,7 @@ export function AppShell() {
         <Suspense fallback={<p role="status">Abrindo…</p>}>
           <Outlet />
         </Suspense>
+        <DonationInvite />
       </main>
       <div className={styles.dockFade} aria-hidden="true" />
       <nav aria-label="Navegação principal" className={styles.nav}>

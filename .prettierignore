@@ -7,3 +7,4 @@ test-results/
 package-lock.json
 LICENSE
 src/assets/fonts/OFL.txt
+public/animations/
